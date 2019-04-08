@@ -60,7 +60,7 @@ def parse_contents(contents, filename, date):
         ])
 
     #On récupère les numéros présents dans le csv 
-    numeros = df.loc[:, 'Ondernemingsnummer'].values
+    numeros = df['Ondernemingsnummer'].values
 
     #On formate les numéros sous la forme 0xxx . xxx . xxx 
     format_numbers = []
@@ -68,60 +68,35 @@ def parse_contents(contents, filename, date):
         if len(n) == 11:
             s = '0' + '.'.join(n.split())
             format_numbers.append(s)
-        else:
-            format_numbers.append(n)
-
+        #else:
+        #   format_numbers.append(n)
+ 
 
     ### Connexion à la base de donnée SQLite
     connection = sqlite3.connect('kbo.sqlite3')
     #print('connection Ok')
     statement = connection.cursor()
 
-    #On stocke tous les attributs de la table enterprise:
+    fetch_numbers = []
 
-    #On récupère tous les numéros de la DB dans results
-    all_numbers = []
-    for row in statement.execute("SELECT EnterpriseNumber FROM enterprise"):
-        for number in row:
-            all_numbers.append(number)
-    
-    #On récupère toutes les Formes Juridiques 
-    all_JF = []
-    for row in statement.execute("SELECT DISTINCT JuridicalForm FROM enterprise ORDER BY JuridicalForm"):
-        for number in row:
-            all_JF.append(number)
-
-    #On récupère toutes les Situations Juridiques
-    all_JS = []
-    for row in statement.execute("SELECT DISTINCT JuridicalSituation FROM enterprise ORDER BY JuridicalSituation"):
-        for number in row:
-            all_JS.append(number)
-    
-    #On récupère tous les Types d'Entreprise
-    all_TOE = []
-    for row in statement.execute("SELECT DISTINCT TypeOfEnterprise FROM enterprise ORDER BY TypeOfENterprise"):
-        for number in row:
-            all_TOE.append(number)
-    
-    #On récupère toutes les dates de début d'activité des entreprises
-    all_DATES = []
-    for row in statement.execute("SELECT DISTINCT StartDate FROM enterprise ORDER BY StartDate"):
-        for number in row:
-            all_DATES.append(number)
-
- 
+    for n in format_numbers:
+        statement.execute("SELECT * FROM enterprise WHERE EnterpriseNumber=:number", {"number": n})
+        sql = statement.fetchone()
+        if sql != None:
+            fetch_numbers.append(sql)
+    for line in fetch_numbers:
+        print(line)
+        
 
     return html.Div([
         html.Div('Collected data from ' + filename, style = {'padding':'20px','size':'20','fontWeight':'bold','color':'steelblue'}),
         
 
         #   data=df.to_dict('rows'),
-        #    columns=[{'name': i, 'id': i} for i in df.columns]
+        #   columns=[{'name': i, 'id': i} for i in df.columns]
         #),
 
-
     ])
-
 
 
 @app.callback(Output('output-data-upload', 'children'),
