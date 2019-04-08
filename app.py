@@ -12,6 +12,7 @@ import sqlite3
 
 numeros = []
 
+
 app = dash.Dash(__name__)
 
 
@@ -37,7 +38,9 @@ app.layout = html.Div([
     html.Div(id='output-data-upload'),
 
 
-    html.Div()
+    html.Div(
+        
+    )
 
     
 ], id = "body_page")
@@ -78,25 +81,60 @@ def parse_contents(contents, filename, date):
     statement = connection.cursor()
 
     fetch_numbers = []
+    data = []
 
     for n in format_numbers:
         statement.execute("SELECT * FROM enterprise WHERE EnterpriseNumber=:number", {"number": n})
         sql = statement.fetchone()
         if sql != None:
             fetch_numbers.append(sql)
+
     for line in fetch_numbers:
-        print(line)
+        row = []
+        for elt in line:
+            row.append(elt)
+        data.append(row)
+    
+    frame = pd.DataFrame(data, columns = ['Enterprise Number', 'Status', 'Juridical Situation', 'Type of enterprise', 'Juridical Form', 'Start Date' ])
+
+    codes = pd.read_sql_query('SELECT Code, Description from code where Language="FR"', connection).rename(columns={'Code': 'Juridical Form'})
+
+    new_frame = pd.merge(frame, codes, how='left', on='Juridical Form')
+
+    new_frame['size'] = new_frame.groupby(['Juridical Form', 'Description'])['Juridical Form'].transform('size')
+
+
+    #descriptions = []
+    #descriptions_occ = []
+    #JF = frame.loc[: , "Juridical Form"]
+
+    #for i in JF:
         
+    #    statement.execute("SELECT Description from code where Code=:code and Language='FR'", {"code": i})
+    #    sql = statement.fetchone()
+    #    if sql != None:
+    #        if descriptions.count(sql[0]) == 0:
+    #            descriptions.append(sql[0])
+    #            c = JF.count(i)
+                
+  
+    max_rows = 1000
 
     return html.Div([
         html.Div('Collected data from ' + filename, style = {'padding':'20px','size':'20','fontWeight':'bold','color':'steelblue'}),
-        
 
-        #   data=df.to_dict('rows'),
-        #   columns=[{'name': i, 'id': i} for i in df.columns]
-        #),
+        html.Table(
+            
+            [html.Tr([html.Th(col) for col in new_frame.columns]) ] +
+            
+            [html.Tr([
+                html.Td(new_frame.iloc[i][col]) for col in new_frame.columns
+            ]) for i in range(min(len(new_frame), max_rows))]
+    )
 
     ])
+
+
 
 
 @app.callback(Output('output-data-upload', 'children'),
