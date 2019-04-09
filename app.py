@@ -1,5 +1,6 @@
 import dash
 import base64
+import datetime 
 from dash.dependencies import Input, Output, State
 import dash_core_components as dcc
 import dash_html_components as html
@@ -14,6 +15,8 @@ numeros = []
 
 
 app = dash.Dash(__name__)
+
+app.title = 'Companies Data'
 
 
 app.layout = html.Div([
@@ -99,6 +102,7 @@ def parse_contents(contents, filename, date):
 
     #Constructions des tableaux de données pour les graph
 
+    #Pour le graph des formes juridiques
     all_descriptions = merge.loc[: , "Description"]
     descriptions = []
     frequency = []
@@ -109,11 +113,32 @@ def parse_contents(contents, filename, date):
             c = all_descriptions.eq(d).sum()
             frequency.append(c)
     
-    #max_rows = 1000
+    #Pour les dates 
+    all_dates = merge.loc[: , "Start Date"]
+    
+    x = []
+    year = []
+    proportions = []
+
+    for d in all_dates:
+        string = d.split('-')
+        new_date = string[2]
+        year.append(new_date)
+
+    year.sort()
+
+    for d in year:
+        if x.count(d) == 0:
+            x.append(d)
+            c = year.count(d)
+            proportions.append(c)
+
 
     return html.Div([
 
         html.Div('Results from ' + filename, style = {'padding':'20px','size':'20','fontWeight':'bold','color':'steelblue'}),
+
+        #To display the dataframe - only for debug
 
         #html.Table(
             
@@ -141,6 +166,30 @@ def parse_contents(contents, filename, date):
                         }
                     }
                 }
+            ),
+
+            dcc.Graph(
+                id = "starting dates",
+                style = {'height': 500, 'width': 1000, "display":"block", "margin-left": "auto", "margin-right":"auto"},
+                figure = {
+                    'data': [
+                        {'x': x, 'y': proportions, 'type': 'bar'}
+                    ],
+                    'layout': {
+                        'title': 'Enterprises Starting Dates',
+                        'xaxis':{
+                            'title':'year',
+                            'tickmode':'auto',
+                            'tickandle':'80'
+                        },
+                        'yaxis':{
+                            'title':'Number of enterprises'
+                        }
+                    }
+                }
+
+
+
             )
 
 
