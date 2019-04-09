@@ -38,10 +38,6 @@ app.layout = html.Div([
     html.Div(id='output-data-upload'),
 
 
-    html.Div(
-        
-    )
-
     
 ], id = "body_page")
 
@@ -97,42 +93,58 @@ def parse_contents(contents, filename, date):
     
     frame = pd.DataFrame(data, columns = ['Enterprise Number', 'Status', 'Juridical Situation', 'Type of enterprise', 'Juridical Form', 'Start Date' ])
 
-    codes = pd.read_sql_query('SELECT Code, Description from code where Language="FR"', connection).rename(columns={'Code': 'Juridical Form'})
+    codes = pd.read_sql_query('SELECT Code, Description from code where Language="FR" and Category="JuridicalForm"', connection).rename(columns={'Code': 'Juridical Form'})
 
-    new_frame = pd.merge(frame, codes, how='left', on='Juridical Form')
+    merge = pd.merge(frame, codes, on='Juridical Form')
 
-    new_frame['size'] = new_frame.groupby(['Juridical Form', 'Description'])['Juridical Form'].transform('size')
+    #Constructions des tableaux de données pour les graph
 
+    all_descriptions = merge.loc[: , "Description"]
+    descriptions = []
+    frequency = []
 
-    #descriptions = []
-    #descriptions_occ = []
-    #JF = frame.loc[: , "Juridical Form"]
-
-    #for i in JF:
-        
-    #    statement.execute("SELECT Description from code where Code=:code and Language='FR'", {"code": i})
-    #    sql = statement.fetchone()
-    #    if sql != None:
-    #        if descriptions.count(sql[0]) == 0:
-    #            descriptions.append(sql[0])
-    #            c = JF.count(i)
-                
-  
-    max_rows = 1000
+    for d in all_descriptions:
+        if descriptions.count(d) == 0:
+            descriptions.append(d)
+            c = all_descriptions.eq(d).sum()
+            frequency.append(c)
+    
+    #max_rows = 1000
 
     return html.Div([
-        html.Div('Collected data from ' + filename, style = {'padding':'20px','size':'20','fontWeight':'bold','color':'steelblue'}),
 
-        html.Table(
-            
-            [html.Tr([html.Th(col) for col in new_frame.columns]) ] +
-            
-            [html.Tr([
-                html.Td(new_frame.iloc[i][col]) for col in new_frame.columns
-            ]) for i in range(min(len(new_frame), max_rows))]
-    )
+        html.Div('Results from ' + filename, style = {'padding':'20px','size':'20','fontWeight':'bold','color':'steelblue'}),
 
-    ])
+        #html.Table(
+            
+        #    [html.Tr([html.Th(col) for col in merge.columns]) ] +
+            
+        #    [html.Tr([
+        #        html.Td(merge.iloc[i][col]) for col in merge.columns
+        #    ]) for i in range(min(len(merge), max_rows))]
+        #)
+
+            dcc.Graph(
+                id = "graph_juridical_form",
+                style = {'height': 500, 'width': 700, "display":"block", "margin-left": "auto", "margin-right":"auto"},
+                figure = {
+                    'data': [
+                        {'x': descriptions, 'y': frequency, 'type': 'bar'}
+                    ],
+                    'layout': {
+                        'title': 'Distribution by juridical form',
+                        'xaxis':{
+                            'title':'Juridical form'
+                        },
+                        'yaxis':{
+                            'title':'Number of enterprises'
+                        }
+                    }
+                }
+            )
+
+
+    ], style = {'flex':'1','textAlign':'center', 'justifyContent':'center', 'alignItems':'center'})
 
 
 
