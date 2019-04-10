@@ -4,7 +4,6 @@ import datetime
 from dash.dependencies import Input, Output, State
 import dash_core_components as dcc
 import dash_html_components as html
-import dash_table_experiments as dt
 import dash_table
 import pandas as pd 
 import plotly.plotly as py
@@ -13,15 +12,14 @@ import io
 import csv 
 import sqlite3
 
+
 DEFAULT_COLOURS = ['steelblue', 'purple', 'darktruquoise', 'mediumseagreen', 'palegoldenrod', 'lightblue']
 
 numeros = []
 
-
 app = dash.Dash(__name__)
 
 app.title = 'Companies Data'
-
 
 app.layout = html.Div([
 
@@ -35,7 +33,7 @@ app.layout = html.Div([
             html.A('Select File', style = {'color':'skyblue','textDecoration':'underline'})
         ]),
         style={
-            'height': '60px','lineHeight':'60px','borderWidth': '1px','borderStyle': 'dashed','borderRadius': '5px','textAlign': 'center',   
+            'height': '60px','lineHeight':'60px','borderWidth': '1px','borderStyle': 'dashed','borderRadius': '5px','textAlign': 'center','backgroundColor':'white' 
         },
         multiple=True
     ),
@@ -87,7 +85,8 @@ def parse_contents(contents, filename, date):
     data = []
 
     for n in format_numbers:
-        statement.execute("SELECT * FROM enterprise WHERE EnterpriseNumber=:number", {"number": n})
+        statement.execute("SELECT EntityNumber, JuridicalForm, StartDate, Zipcode FROM enterprise_adresses WHERE EntityNumber=:number", {"number": n})
+        #statement.execute("SELECT * FROM enterprise WHERE EnterpriseNumber=:number", {"number": n})
         sql = statement.fetchone()
         if sql != None:
             fetch_numbers.append(sql)
@@ -98,11 +97,17 @@ def parse_contents(contents, filename, date):
             row.append(elt)
         data.append(row)
     
-    frame = pd.DataFrame(data, columns = ['Enterprise Number', 'Status', 'Juridical Situation', 'Type of enterprise', 'Juridical Form', 'Start Date' ])
+    frame = pd.DataFrame(data, columns = ['Entity Number','Juridical Form', 'Start Date', 'ZipCode'])
+    #frame = pd.DataFrame(data, columns = ['Entity Number', 'Status', 'Juridical Situation', 'Type of enterprise', 'Juridical Form', 'Start Date'])
+
 
     codes = pd.read_sql_query('SELECT Code, Description from code where Language="FR" and Category="JuridicalForm"', connection).rename(columns={'Code': 'Juridical Form'})
-
+    codes['Juridical Form'] = codes['Juridical Form'].astype(float)
     merge = pd.merge(frame, codes, on='Juridical Form')
+
+    geo = pd.read_sql_query('SELECT DISTINCT postcode, long, lat FROM postcode_geo', connection).rename(columns = {'postcode':'ZipCode'})
+    geo['ZipCode'] = geo['ZipCode'].astype(str)
+    new_merge = pd.merge(merge, geo, on = 'ZipCode')
 
     #Constructions des tableaux de données pour les graph
 
@@ -165,53 +170,67 @@ def parse_contents(contents, filename, date):
     part.append(C4)
     part.append(C5)
 
-    trace = go.Pie(labels=size, values=part)
+    #Nombre d'employés
 
-    
-
+    #max_rows = 20
     return html.Div([
-
-        html.Div('Results from ' + filename, style = {'padding':'20px','size':'20','fontWeight':'bold','color':'steelblue'}),
 
         #To display the dataframe - only for debug
 
-        #html.Table(
-            
-        #    [html.Tr([html.Th(col) for col in merge.columns]) ] +
-            
-        #    [html.Tr([
-        #        html.Td(merge.iloc[i][col]) for col in merge.columns
-        #    ]) for i in range(min(len(merge), max_rows))]
-        #)
+            html.Div([
+                dash_table.DataTable(
+                    id = 'table',
+                    columns = [{"name": i, "id": i} for i in merge.columns],
+                    style_table = { 'overflowX':'scroll','overflowY': 'scroll','maxHeight':'200'},
+                    data = merge.to_dict("rows"),
+                    style_as_list_view = True,
+                    style_cell={'padding': '5px',
+                                'maxWidth': 0,
+                                'height': 30,
+                                'textAlign': 'center'},
+                    style_header={
+                        'backgroundColor': 'darkgray',
+                        'fontWeight': 'bold',
+                        'color': 'white'
+                    },
+                    n_fixed_rows = 1,
+                   
+                ),
 
-            dcc.Graph(
-                id = "graph_juridical_form",
-                style = {'height': 500, 'width': 700, "display":"block", "margin-left": "auto", "margin-right":"auto"},
-                figure = {
-                    'data': [
-                        go.Bar(
-                            x = descriptions,
-                            y = frequency,
-                            marker = {
-                                'color': frequency, 'colorscale':'Viridis'
-                            }
-                        )
-                    ],
-                    'layout': {
-                        'title': 'Distribution by juridical form',
-                        'xaxis':{
-                            'title':'Juridical form'
-                        },
-                        'yaxis':{
-                            'title':'Number of enterprises'
-                        }
-                    }
-                }
-            ),
 
+            ], id = 'div_table'), #style = {'margin-top': '35','border': '1px solid #C6CCD5','paddingLeft':'90', 'paddingRight':'90', 'paddingBottom':'20'}),
+        
+            
+                dcc.Graph(
+                                id = "graph_juridical_form",
+                                #style = {'height': 500, 'width': 700, "display":"block", "margin-left": "auto", "margin-right":"auto"},
+                                figure = {
+                                    'data': [
+                                        go.Bar(
+                                            x = descriptions,
+                                            y = frequency,
+                                            marker = {
+                                                'color': frequency, 'colorscale':'Viridis'
+                                            }
+                                        )
+                                    ],
+                                    'layout': {
+                                        'title':'Distribution by Juridical Form',
+                                        'xaxis':{
+                                            'title':'Juridical form'
+                                        },
+                                        'yaxis':{
+                                            'title':'Number of enterprises'
+                                        }
+                                    }
+                                }
+                            ),
+
+
+           
             dcc.Graph(
                 id = "starting dates",
-                style = {'height': 500, 'width': 800, "display":"block", "margin-left": "auto", "margin-right":"auto"},
+                style = {'height': 500, 'width': 700, "display":"block", "margin-left": "auto", "margin-right":"auto","padding":"20px"},
                 figure = {
                     'data': [
                         go.Bar(
@@ -239,7 +258,7 @@ def parse_contents(contents, filename, date):
 
             dcc.Graph(
                 id = "pie chart ages",
-                style = {'height': 500, 'width': 1000, "display":"block", "margin-left": "auto", "margin-right":"auto"},
+                style = {'height': 500, 'width': 700, "display":"block", "margin-left": "auto", "margin-right":"auto","padding":"20px"},
                 figure = {
                     'data': [
                         go.Pie(
@@ -258,8 +277,7 @@ def parse_contents(contents, filename, date):
             )
 
 
-    ], style = {'flex':'1','textAlign':'center', 'justifyContent':'center', 'alignItems':'center'})
-
+    ], style = {'flex':'1','textAlign':'center', 'justifyContent':'center', 'alignItems':'center','backgroundColor':'lightgray'})
 
 
 
