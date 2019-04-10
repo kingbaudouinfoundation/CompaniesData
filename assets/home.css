@@ -1,4 +1,6 @@
-#body_page { flex: 1; align-items: center; text-align: center;}
-#top {background-color:steelblue; text-align: center; color: white;padding: 20px; height: 50px; font-size: 70; font-weight: bold;}
+#body_page { flex: 1; align-items: center; text-align: center; justify-content: center;}
+#top {background-color:steelblue; text-align: center; color: white;padding: 20px; height: 90px; font-weight: bold;}
 #upload-data {padding: 20px;}
 #selection {text-decoration: underline; text-decoration-color: skyblue; color: skyblue;}
+#graph {text-align: center; align-content: center; justify-content: center;}
+#render {text-align: center; align-content: center; justify-content: center;}

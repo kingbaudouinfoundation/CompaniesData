@@ -7,9 +7,13 @@ import dash_html_components as html
 import dash_table_experiments as dt
 import dash_table
 import pandas as pd 
+import plotly.plotly as py
+import plotly.graph_objs as go
 import io
 import csv 
 import sqlite3
+
+DEFAULT_COLOURS = ['steelblue', 'purple', 'darktruquoise', 'mediumseagreen', 'palegoldenrod', 'lightblue']
 
 numeros = []
 
@@ -113,7 +117,7 @@ def parse_contents(contents, filename, date):
             c = all_descriptions.eq(d).sum()
             frequency.append(c)
     
-    #Pour les dates 
+    #Histogramme des dates de début des entreprises
     all_dates = merge.loc[: , "Start Date"]
     
     x = []
@@ -132,7 +136,38 @@ def parse_contents(contents, filename, date):
             x.append(d)
             c = year.count(d)
             proportions.append(c)
+    
+    #Pie chart de l'age des entreprises
 
+    this_year = datetime.datetime.now()
+    current_year = int(this_year.year)
+
+    #Calcul de la répartition des tranches d'age
+    size = ['1 to 5 year', '5 to 10 year', '10 to 15 year', '15 to 20 year', 'More than 20 year']
+    part = []
+    C1 = C2 = C3 = C4 = C5 = 0
+
+    for d in year:
+        if current_year - int(d) < 5:
+            C1 = C1 + 1
+        if current_year - int(d) > 5 and current_year - int(d) < 10:
+            C2 = C2 + 1
+        if current_year - int(d) > 10 and current_year - int(d) < 15:
+            C3 = C3 + 1
+        if current_year - int(d) > 15 and current_year - int(d) < 20:
+            C4 = C4 + 1
+        if current_year - int(d) > 20:
+            C5 = C5 + 1
+    
+    part.append(C1)
+    part.append(C2)
+    part.append(C3)
+    part.append(C4)
+    part.append(C5)
+
+    trace = go.Pie(labels=size, values=part)
+
+    
 
     return html.Div([
 
@@ -154,7 +189,13 @@ def parse_contents(contents, filename, date):
                 style = {'height': 500, 'width': 700, "display":"block", "margin-left": "auto", "margin-right":"auto"},
                 figure = {
                     'data': [
-                        {'x': descriptions, 'y': frequency, 'type': 'bar'}
+                        go.Bar(
+                            x = descriptions,
+                            y = frequency,
+                            marker = {
+                                'color': frequency, 'colorscale':'Viridis'
+                            }
+                        )
                     ],
                     'layout': {
                         'title': 'Distribution by juridical form',
@@ -170,13 +211,19 @@ def parse_contents(contents, filename, date):
 
             dcc.Graph(
                 id = "starting dates",
-                style = {'height': 500, 'width': 1000, "display":"block", "margin-left": "auto", "margin-right":"auto"},
+                style = {'height': 500, 'width': 800, "display":"block", "margin-left": "auto", "margin-right":"auto"},
                 figure = {
                     'data': [
-                        {'x': x, 'y': proportions, 'type': 'bar'}
+                        go.Bar(
+                            x = x,
+                            y = proportions,
+                            marker = {
+                                'color':'goldenrod'
+                            }
+                        )
                     ],
                     'layout': {
-                        'title': 'Enterprises Starting Dates',
+                        'title': 'Starting Dates Histogram',
                         'xaxis':{
                             'title':'year',
                             'tickmode':'auto',
@@ -188,8 +235,26 @@ def parse_contents(contents, filename, date):
                     }
                 }
 
+            ),
 
-
+            dcc.Graph(
+                id = "pie chart ages",
+                style = {'height': 500, 'width': 1000, "display":"block", "margin-left": "auto", "margin-right":"auto"},
+                figure = {
+                    'data': [
+                        go.Pie(
+                            labels = size,
+                            values = part,
+                            hole = .5,
+                            marker = {
+                                'colors': DEFAULT_COLOURS
+                            }
+                        )
+                    ],
+                    'layout': {
+                        'title': 'Enterprises age'
+                    }
+                }
             )
 
 
