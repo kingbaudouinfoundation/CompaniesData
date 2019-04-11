@@ -2,8 +2,18 @@
 #top {background-color:steelblue; text-align: center; color: white;padding: 20px; height: 90px; font-weight: bold;}
 #upload-data {padding: 20px;}
 #selection {text-decoration: underline; text-decoration-color: skyblue; color: skyblue;}
+
+
+#div_table {padding-Left:20px; padding-right:20px;padding-bottom:30px;}
+
 #first_row {display: flex;}
-#graph_juridical_form {height: 400px; width: 700px; padding: 20px; margin-left: auto; margin-right: auto;}
-#starting_dates {height: 400px; width: 900px; padding: 20px; margin-left: auto;margin-right: auto;}
-#pie_chart_ages {height:400px;padding:20px;width:700px;}
-#div_table {padding-Left:20px; padding-right:20px;padding-bottom:20px;}
+
+#div_pie_ages {height:400px;margin-left: auto;margin-right: auto;width:590px;border: solid gray;}
+#pie_chart_ages {height:400px;width:590px;}
+
+#div_pie_form {height:400px;margin-left: auto;margin-right: auto;width:590px;border:solid gray;}
+#graph_juridical_form {height: 400px; width:590px;}
+
+#second_row {display: flex;}
+#div_bar_dates {height:400px;margin-left: auto;margin-right: auto;width:590px;border:solid gray; margin-top: 20px;}
+#starting_dates {height: 400px; width: 590px;}
