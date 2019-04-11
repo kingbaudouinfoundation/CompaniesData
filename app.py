@@ -198,67 +198,12 @@ def parse_contents(contents, filename, date):
                 ),
 
 
-            ], id = 'div_table'), #style = {'margin-top': '35','border': '1px solid #C6CCD5','paddingLeft':'90', 'paddingRight':'90', 'paddingBottom':'20'}),
-        
-            
+            ], id = 'div_table'), 
+
+            html.Div([
+
                 dcc.Graph(
-                                id = "graph_juridical_form",
-                                #style = {'height': 500, 'width': 700, "display":"block", "margin-left": "auto", "margin-right":"auto"},
-                                figure = {
-                                    'data': [
-                                        go.Bar(
-                                            x = descriptions,
-                                            y = frequency,
-                                            marker = {
-                                                'color': frequency, 'colorscale':'Viridis'
-                                            }
-                                        )
-                                    ],
-                                    'layout': {
-                                        'title':'Distribution by Juridical Form',
-                                        'xaxis':{
-                                            'title':'Juridical form'
-                                        },
-                                        'yaxis':{
-                                            'title':'Number of enterprises'
-                                        }
-                                    }
-                                }
-                            ),
-
-
-           
-            dcc.Graph(
-                id = "starting dates",
-                style = {'height': 500, 'width': 700, "display":"block", "margin-left": "auto", "margin-right":"auto","padding":"20px"},
-                figure = {
-                    'data': [
-                        go.Bar(
-                            x = x,
-                            y = proportions,
-                            marker = {
-                                'color':'goldenrod'
-                            }
-                        )
-                    ],
-                    'layout': {
-                        'title': 'Starting Dates Histogram',
-                        'xaxis':{
-                            'title':'year',
-                            'tickmode':'auto',
-                            'tickandle':'80'
-                        },
-                        'yaxis':{
-                            'title':'Number of enterprises'
-                        }
-                    }
-                }
-
-            ),
-
-            dcc.Graph(
-                id = "pie chart ages",
-                style = {'height': 500, 'width': 700, "display":"block", "margin-left": "auto", "margin-right":"auto","padding":"20px"},
+                id = "pie_chart_ages",
                 figure = {
                     'data': [
                         go.Pie(
@@ -274,10 +219,67 @@ def parse_contents(contents, filename, date):
                         'title': 'Enterprises age'
                     }
                 }
-            )
+            ),
 
 
-    ], style = {'flex':'1','textAlign':'center', 'justifyContent':'center', 'alignItems':'center','backgroundColor':'lightgray'})
+                dcc.Graph(
+                    id = "graph_juridical_form",
+                    figure = {  
+                       'data': [    
+                           go.Pie(
+                                labels = descriptions,
+                                values = frequency,
+                                marker = {
+                                    'colors': DEFAULT_COLOURS
+                                }
+                            )
+                        ],
+                        'layout': {
+                            'title':'Distribution by Juridical Form',
+                            
+                        }  
+                    }
+                ),
+
+
+            ], id = 'first_row'),
+
+        html.Div([
+
+             dcc.Graph(
+                    id = "starting_dates",
+                    figure = {
+                        'data': [
+                            go.Bar(
+                                x = x,
+                                y = proportions,
+                                marker = {
+                                    'color':'goldenrod'
+                                }
+                            )
+                        ],
+                        'layout': {
+                            'title': 'Starting Dates Histogram',
+                            'xaxis':{
+                                'title':'year',
+                                'tickmode':'auto',
+                                'tickandle':'80'
+                            },
+                            'yaxis':{
+                                'title':'Number of enterprises'
+                            }
+                        }
+                    }
+
+                ),
+
+            
+
+            
+        ])
+
+
+    ], style = {'flex':'1','textAlign':'center', 'justifyContent':'center', 'alignItems':'center','backgroundColor':'whitesmoke'})
 
 
 
