@@ -13,7 +13,8 @@ import csv
 import sqlite3
 
 
-DEFAULT_COLOURS = ['steelblue', 'purple', 'darktruquoise', 'mediumseagreen', 'palegoldenrod', 'lightblue']
+DEFAULT_COLOURS_1 = ['steelblue', 'purple', 'darktruquoise', 'mediumseagreen', 'palegoldenrod', 'lightblue']
+DEFAULT_COLOURS_2 = ['indigo', 'gold', 'darkorange']
 
 numeros = []
 
@@ -65,6 +66,9 @@ def parse_contents(contents, filename, date):
 
     #On récupère les numéros présents dans le csv 
     numeros = df['Ondernemingsnummer'].values
+    df.rename(columns = {'Naam':'Name'}, inplace = True)
+    df.rename(columns = {'Ondernemingsnummer':'Entity Number'}, inplace = True)
+
 
     #On formate les numéros sous la forme 0xxx . xxx . xxx 
     format_numbers = []
@@ -85,8 +89,7 @@ def parse_contents(contents, filename, date):
     data = []
 
     for n in format_numbers:
-        statement.execute("SELECT EntityNumber, JuridicalForm, StartDate, Zipcode FROM enterprise_adresses WHERE EntityNumber=:number", {"number": n})
-        #statement.execute("SELECT * FROM enterprise WHERE EnterpriseNumber=:number", {"number": n})
+        statement.execute("SELECT EntityNumber, JuridicalForm, StartDate, Zipcode, Employees FROM enterprise_addresses WHERE EntityNumber=:number", {"number": n})
         sql = statement.fetchone()
         if sql != None:
             fetch_numbers.append(sql)
@@ -97,7 +100,7 @@ def parse_contents(contents, filename, date):
             row.append(elt)
         data.append(row)
     
-    frame = pd.DataFrame(data, columns = ['Entity Number','Juridical Form', 'Start Date', 'ZipCode'])
+    frame = pd.DataFrame(data, columns = ['Entity Number','Juridical Form', 'Start Date', 'ZipCode', 'Employees'])
     #frame = pd.DataFrame(data, columns = ['Entity Number', 'Status', 'Juridical Situation', 'Type of enterprise', 'Juridical Form', 'Start Date'])
 
 
@@ -172,17 +175,35 @@ def parse_contents(contents, filename, date):
 
     #Nombre d'employés
 
-    #max_rows = 20
+    #Geolocalisation
+
     return html.Div([
 
-        #To display the dataframe - only for debug
-
             html.Div([
+                #dash_table.DataTable(
+                #    id = 'table',
+                #    columns = [{"name": i, "id": i} for i in merge.columns],
+                #    style_table = { 'overflowX':'scroll','overflowY': 'scroll','maxHeight':'200'},
+                #    data = merge.to_dict("rows"),
+                #    style_as_list_view = True,
+                #    style_cell={'padding': '5px',
+                #                'maxWidth': 0,
+                #                'height': 30,
+                #                'textAlign': 'center'},
+                #    style_header={
+                #        'backgroundColor': 'darkgray',
+                #        'fontWeight': 'bold',
+                #        'color': 'white'
+                #    },
+                #    n_fixed_rows = 1,
+                   
+                #),
+
                 dash_table.DataTable(
                     id = 'table',
-                    columns = [{"name": i, "id": i} for i in merge.columns],
+                    columns = [{'name':i, 'id':i} for i in df.columns],
                     style_table = { 'overflowX':'scroll','overflowY': 'scroll','maxHeight':'200'},
-                    data = merge.to_dict("rows"),
+                    data = df.to_dict("rows"),
                     style_as_list_view = True,
                     style_cell={'padding': '5px',
                                 'maxWidth': 0,
@@ -194,43 +215,47 @@ def parse_contents(contents, filename, date):
                         'color': 'white'
                     },
                     n_fixed_rows = 1,
-                   
+
                 ),
 
 
             ], id = 'div_table'), 
 
             html.Div([
-
-                dcc.Graph(
-                id = "pie_chart_ages",
-                figure = {
-                    'data': [
-                        go.Pie(
-                            labels = size,
-                            values = part,
-                            hole = .5,
-                            marker = {
-                                'colors': DEFAULT_COLOURS
-                            }
-                        )
-                    ],
-                    'layout': {
-                        'title': 'Enterprises age'
+                
+                html.Div([
+                    dcc.Graph(
+                    id = "pie_chart_ages",
+                    figure = {
+                        'data': [
+                            go.Pie(
+                                labels = size,
+                                values = part,
+                                hole = .5,
+                                marker = {
+                                    'colors': DEFAULT_COLOURS_1
+                                }
+                            )
+                        ],
+                        'layout': {
+                            'title': 'Enterprises age'
+                        }
                     }
-                }
-            ),
+                ),
 
-
-                dcc.Graph(
+                ], id = "div_pie_ages"),
+                
+                html.Div([
+                    dcc.Graph(
                     id = "graph_juridical_form",
                     figure = {  
                        'data': [    
                            go.Pie(
                                 labels = descriptions,
                                 values = frequency,
+                                hole = .5,
                                 marker = {
-                                    'colors': DEFAULT_COLOURS
+                                    'colors': DEFAULT_COLOURS_2
                                 }
                             )
                         ],
@@ -241,42 +266,48 @@ def parse_contents(contents, filename, date):
                     }
                 ),
 
+                ], id = "div_pie_form")
+                
+
 
             ], id = 'first_row'),
 
-        html.Div([
 
-             dcc.Graph(
-                    id = "starting_dates",
-                    figure = {
-                        'data': [
-                            go.Bar(
-                                x = x,
-                                y = proportions,
-                                marker = {
-                                    'color':'goldenrod'
+
+
+            html.Div([
+
+                html.Div([
+                    dcc.Graph(
+                        id = "starting_dates",
+                        figure = {
+                            'data': [
+                                go.Bar(
+                                    x = x,
+                                    y = proportions,
+                                    marker = {
+                                        'color':'goldenrod'
+                                    }
+                                )
+                            ],
+                            'layout': {
+                                'title': 'Starting Dates Histogram',
+                                'xaxis':{
+                                    'title':'year',
+                                    'tickmode':'auto',
+                                    'tickandle':'80'
+                                },
+                                'yaxis':{
+                                    'title':'Number of enterprises'
                                 }
-                            )
-                        ],
-                        'layout': {
-                            'title': 'Starting Dates Histogram',
-                            'xaxis':{
-                                'title':'year',
-                                'tickmode':'auto',
-                                'tickandle':'80'
-                            },
-                            'yaxis':{
-                                'title':'Number of enterprises'
                             }
                         }
-                    }
 
-                ),
+                    ), 
 
-            
-
-            
-        ])
+                ], id = "div_bar_dates")
+                
+            ], id = "second_row")
 
 
     ], style = {'flex':'1','textAlign':'center', 'justifyContent':'center', 'alignItems':'center','backgroundColor':'whitesmoke'})
