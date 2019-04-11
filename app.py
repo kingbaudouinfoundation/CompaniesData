@@ -15,6 +15,7 @@ import sqlite3
 
 DEFAULT_COLOURS_1 = ['steelblue', 'purple', 'darktruquoise', 'mediumseagreen', 'palegoldenrod', 'lightblue']
 DEFAULT_COLOURS_2 = ['indigo', 'gold', 'darkorange']
+DEFAULT_COLOURS_3 = ['darkred', 'indianred', 'lemonchiffon', 'lightsalmon', 'orange', 'mediumorchid']
 
 numeros = []
 
@@ -174,34 +175,61 @@ def parse_contents(contents, filename, date):
     part.append(C5)
 
     #Nombre d'employés
+    tab_emp = []
+    all_employees = merge.loc[: , "Employees"]
+    for e in all_employees:
+        e = e.replace(' trav.', '')
+        e = e.split(' &agrave; ')
+        tab_emp.append(e)
+
+    empl = ['1 to 5', '5 to 10', '10 to 20', '20 to 50', '50 to 100', '100 to 500', '500 to 1000', 'More than 1000']
+    P1 = P2 = P3 = P4 = P5 = P6 = P7 = P8 = 0
+    prop_empl = []
+
+    for row in tab_emp:
+        if len(row) == 2:
+            diff = int(row[1]) - int(row[0])
+            if diff <= 5:
+                P1 = P1 + 1
+            if diff >= 5 and diff <= 10:
+                P2 = P2 + 1
+            if diff >= 10 and diff <= 20:
+                P3 = P3 + 1
+            if diff >= 20 and diff <= 50:
+                P4 = P4 + 1
+            if diff >= 50 and diff <= 100:
+                P5 = P5 + 1 
+            if diff>= 100 and diff <= 500:
+                P6 = P6 + 1
+            if diff >= 500 and diff <= 1000:
+                P7 = P7 + 1
+        if len(row) == 1 and row[0] is not None:
+            P8 = P8 + 1
+    
+    prop_empl.append(P1)
+    prop_empl.append(P2)
+    prop_empl.append(P3)
+    prop_empl.append(P4)
+    prop_empl.append(P5)
+    prop_empl.append(P6)
+    prop_empl.append(P7)
+    prop_empl.append(P8)
 
     #Geolocalisation
 
     return html.Div([
 
             html.Div([
-                #dash_table.DataTable(
-                #    id = 'table',
-                #    columns = [{"name": i, "id": i} for i in merge.columns],
-                #    style_table = { 'overflowX':'scroll','overflowY': 'scroll','maxHeight':'200'},
-                #    data = merge.to_dict("rows"),
-                #    style_as_list_view = True,
-                #    style_cell={'padding': '5px',
-                #                'maxWidth': 0,
-                #                'height': 30,
-                #                'textAlign': 'center'},
-                #    style_header={
-                #        'backgroundColor': 'darkgray',
-                #        'fontWeight': 'bold',
-                #        'color': 'white'
-                #    },
-                #    n_fixed_rows = 1,
-                   
-                #),
-
+                
                 dash_table.DataTable(
                     id = 'table',
                     columns = [{'name':i, 'id':i} for i in df.columns],
+                    style_cell_conditional=[
+                        {
+                            'if': {'row_index': 'odd'},
+                            'backgroundColor': 'whitesmoke'
+                        }
+                    ],
                     style_table = { 'overflowX':'scroll','overflowY': 'scroll','maxHeight':'200'},
                     data = df.to_dict("rows"),
                     style_as_list_view = True,
@@ -210,15 +238,12 @@ def parse_contents(contents, filename, date):
                                 'height': 30,
                                 'textAlign': 'center'},
                     style_header={
-                        'backgroundColor': 'darkgray',
+                        'backgroundColor': 'midnightblue',
                         'fontWeight': 'bold',
                         'color': 'white'
                     },
                     n_fixed_rows = 1,
-
                 ),
-
-
             ], id = 'div_table'), 
 
             html.Div([
@@ -264,15 +289,12 @@ def parse_contents(contents, filename, date):
                             
                         }  
                     }
-                ),
+                    ),
 
-                ], id = "div_pie_form")
+                ], id = "div_pie_form"),
+
                 
-
-
             ], id = 'first_row'),
-
-
 
 
             html.Div([
@@ -302,15 +324,31 @@ def parse_contents(contents, filename, date):
                                 }
                             }
                         }
-
                     ), 
+                ], id = "div_bar_dates"),
 
-                ], id = "div_bar_dates")
-                
+                html.Div([
+                    dcc.Graph(
+                        id = "graph_employees",
+                        figure = {  
+                        'data': [    
+                            go.Pie(
+                                    labels = empl,
+                                    values = prop_empl,
+                                    hole = 0,
+                                    marker = {
+                                        'colors': DEFAULT_COLOURS_3
+                                    }
+                                )
+                            ],
+                            'layout': {
+                                'title':'Number of employees per entity',
+                            }  
+                        }
+                    ),
+                ], id = "div_pie_empl"),
             ], id = "second_row")
-
-
-    ], style = {'flex':'1','textAlign':'center', 'justifyContent':'center', 'alignItems':'center','backgroundColor':'whitesmoke'})
+    ], style = {'flex':'1','textAlign':'center', 'justifyContent':'center', 'alignItems':'center','backgroundColor':'lightgray'})
 
 
 
