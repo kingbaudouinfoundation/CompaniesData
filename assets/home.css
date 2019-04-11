@@ -1,4 +1,4 @@
-#body_page { flex: 1; align-items: center; text-align: center; justify-content: center; background-color: whitesmoke;}
+#body_page { flex: 1; align-items: center; text-align: center; justify-content: center; background-color: lightgray;}
 #top {background-color:steelblue; text-align: center; color: white;padding: 20px; height: 90px; font-weight: bold;}
 #upload-data {padding: 20px;}
 #selection {text-decoration: underline; text-decoration-color: skyblue; color: skyblue;}
@@ -15,5 +15,7 @@
 #graph_juridical_form {height: 400px; width:590px;}
 
 #second_row {display: flex;}
-#div_bar_dates {height:400px;margin-left: auto;margin-right: auto;width:590px;border:solid gray; margin-top: 20px;}
-#starting_dates {height: 400px; width: 590px;}
+#div_bar_dates {height:400px;margin-left: auto;margin-right: auto;width:750px;border:solid gray;margin-top: 20px;}
+#starting_dates {height: 400px; width: 750px;}
+#div_pie_empl {height:400px;margin-left: auto;margin-right: auto;width:430px;border:solid gray;margin-top: 20px;}
+#graph_employees {height: 400px; width: 430px;}
