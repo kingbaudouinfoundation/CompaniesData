@@ -1,8 +1,9 @@
-#body_page { flex: 1; align-items: center; text-align: center; justify-content: center; background-color: lightgray;}
+#body_page { flex: 1; align-items: center; text-align: center; justify-content: center; background-color: whitesmoke;}
 #top {background-color:steelblue; text-align: center; color: white;padding: 20px; height: 90px; font-weight: bold;}
 #upload-data {padding: 20px;}
 #selection {text-decoration: underline; text-decoration-color: skyblue; color: skyblue;}
-#graph {text-align: center; align-content: center; justify-content: center;}
-#render {text-align: center; align-content: center; justify-content: center;}
-#graph_juridical_form {height: 500px; width: 700px; display:block; margin-left: auto;margin-right:auto;}
-#div_table {padding-Left:30px; padding-right:30px;padding-bottom:20px;}
+#first_row {display: flex;}
+#graph_juridical_form {height: 400px; width: 700px; padding: 20px; margin-left: auto; margin-right: auto;}
+#starting_dates {height: 400px; width: 900px; padding: 20px; margin-left: auto;margin-right: auto;}
+#pie_chart_ages {height:400px;padding:20px;width:700px;}
+#div_table {padding-Left:20px; padding-right:20px;padding-bottom:20px;}
