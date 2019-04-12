@@ -6,6 +6,10 @@
 
 #div_table {padding-Left:20px; padding-right:20px;padding-bottom:30px;}
 
+#div_first_count_row {display: flex;}
+#div_count_age {height:40px;margin-left: auto;margin-right: auto;width:590px;border: solid gray; margin-bottom: 5px; background-color: white;}
+#div_count_description {height:40px;margin-left: auto;margin-right: auto;width:590px;border: solid gray; margin-bottom: 5px;background-color: white;}
+
 #first_row {display: flex;}
 
 #div_pie_ages {height:400px;margin-left: auto;margin-right: auto;width:590px;border: solid gray;}
@@ -14,8 +18,12 @@
 #div_pie_form {height:400px;margin-left: auto;margin-right: auto;width:590px;border:solid gray;}
 #graph_juridical_form {height: 400px; width:590px;}
 
+#div_second_count_row {display: flex;}
+#div_count_starting_dates {height:40px;margin-left: auto;margin-right: auto;width:750px;border: solid gray; margin-bottom: 5px; margin-top :5px;background-color: white;}
+#div_count_empl {height:40px;margin-left: auto;margin-right: auto;width:430px;border: solid gray; margin-bottom: 5px;  margin-top :5px;background-color: white;}
+
 #second_row {display: flex;}
-#div_bar_dates {height:400px;margin-left: auto;margin-right: auto;width:750px;border:solid gray;margin-top: 20px;}
+#div_bar_dates {height:400px;margin-left: auto;margin-right: auto;width:750px;border:solid gray;}
 #starting_dates {height: 400px; width: 750px;}
-#div_pie_empl {height:400px;margin-left: auto;margin-right: auto;width:430px;border:solid gray;margin-top: 20px;}
+#div_pie_empl {height:400px;margin-left: auto;margin-right: auto;width:430px;border:solid gray;}
 #graph_employees {height: 400px; width: 430px;}
