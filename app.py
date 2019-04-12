@@ -118,33 +118,31 @@ def parse_contents(contents, filename, date):
     #Pour le graph des formes juridiques
     all_descriptions = merge.loc[: , "Description"]
     descriptions = []
-    frequency = []
+    descriptions_prop = []
 
     for d in all_descriptions:
         if descriptions.count(d) == 0:
             descriptions.append(d)
             c = all_descriptions.eq(d).sum()
-            frequency.append(c)
+            descriptions_prop.append(c)
     
     #Histogramme des dates de début des entreprises
     all_dates = merge.loc[: , "Start Date"]
     
     x = []
     year = []
-    proportions = []
+    year_prop = []
 
     for d in all_dates:
         string = d.split('-')
         new_date = string[2]
         year.append(new_date)
 
-    year.sort()
-
     for d in year:
         if x.count(d) == 0:
             x.append(d)
             c = year.count(d)
-            proportions.append(c)
+            year_prop.append(c)
     
     #Pie chart de l'age des entreprises
 
@@ -156,17 +154,21 @@ def parse_contents(contents, filename, date):
     part = []
     C1 = C2 = C3 = C4 = C5 = 0
 
+    count_date = 0
     for d in year:
-        if current_year - int(d) < 5:
-            C1 = C1 + 1
-        if current_year - int(d) > 5 and current_year - int(d) < 10:
-            C2 = C2 + 1
-        if current_year - int(d) > 10 and current_year - int(d) < 15:
-            C3 = C3 + 1
-        if current_year - int(d) > 15 and current_year - int(d) < 20:
-            C4 = C4 + 1
-        if current_year - int(d) > 20:
-            C5 = C5 + 1
+        if d is not None:
+            if current_year - int(d) < 5:
+                C1 = C1 + 1
+            if current_year - int(d) > 5 and current_year - int(d) < 10:
+                C2 = C2 + 1
+            if current_year - int(d) > 10 and current_year - int(d) < 15:
+                C3 = C3 + 1
+            if current_year - int(d) > 15 and current_year - int(d) < 20:
+                C4 = C4 + 1
+            if current_year - int(d) > 20:
+                C5 = C5 + 1
+            count_date = count_date + 1
+            
     
     part.append(C1)
     part.append(C2)
@@ -175,12 +177,15 @@ def parse_contents(contents, filename, date):
     part.append(C5)
 
     #Nombre d'employés
+    count_empl = 0
     tab_emp = []
     all_employees = merge.loc[: , "Employees"]
     for e in all_employees:
-        e = e.replace(' trav.', '')
-        e = e.split(' &agrave; ')
-        tab_emp.append(e)
+        if e is not None:
+            e = e.replace(' trav.', '')
+            e = e.split(' &agrave; ')
+            tab_emp.append(e)
+            count_empl = count_empl + 1
 
     empl = ['1 to 5', '5 to 10', '10 to 20', '20 to 50', '50 to 100', '100 to 500', '500 to 1000', 'More than 1000']
     P1 = P2 = P3 = P4 = P5 = P6 = P7 = P8 = 0
@@ -238,13 +243,25 @@ def parse_contents(contents, filename, date):
                                 'height': 30,
                                 'textAlign': 'center'},
                     style_header={
-                        'backgroundColor': 'midnightblue',
+                        'backgroundColor': 'gray',
                         'fontWeight': 'bold',
                         'color': 'white'
                     },
                     n_fixed_rows = 1,
                 ),
             ], id = 'div_table'), 
+
+            html.Div([
+
+                html.Div([
+                    html.P('Based on ' + str(len(year)) + ' entities')
+                ], id = "div_count_age"),
+
+                html.Div([
+                    html.P('Based on ' + str(len(all_descriptions)) + ' entities')
+                ], id = "div_count_description")
+
+            ], id = "div_first_count_row"),
 
             html.Div([
                 
@@ -277,7 +294,7 @@ def parse_contents(contents, filename, date):
                        'data': [    
                            go.Pie(
                                 labels = descriptions,
-                                values = frequency,
+                                values = descriptions_prop,
                                 hole = .5,
                                 marker = {
                                     'colors': DEFAULT_COLOURS_2
@@ -296,6 +313,17 @@ def parse_contents(contents, filename, date):
                 
             ], id = 'first_row'),
 
+            html.Div([
+                html.Div([
+                    html.P('Based on ' + str(count_date) + ' entities')
+                ], id = "div_count_starting_dates"),
+
+                html.Div([
+                    html.P('Based on ' + str(count_empl)+ ' entities')
+                ], id = "div_count_empl")
+
+            ], id = "div_second_count_row"),
+
 
             html.Div([
 
@@ -306,7 +334,7 @@ def parse_contents(contents, filename, date):
                             'data': [
                                 go.Bar(
                                     x = x,
-                                    y = proportions,
+                                    y = year_prop,
                                     marker = {
                                         'color':'goldenrod'
                                     }
