@@ -12,6 +12,7 @@ import io
 import csv 
 import sqlite3
 
+mapbox_access_token = 'pk.eyJ1IjoidGhvbWFzdnJvIiwiYSI6ImNqdWI5Y2JxdjBhYW40NnBpa2RhcHBnb3kifQ.9N4rhGAGmo9zqnXOlt-WOw'
 
 DEFAULT_COLOURS_1 = ['steelblue', 'purple', 'darktruquoise', 'mediumseagreen', 'palegoldenrod', 'lightblue']
 DEFAULT_COLOURS_2 = ['indigo', 'gold', 'darkorange']
@@ -26,14 +27,20 @@ app.title = 'Companies Data'
 app.layout = html.Div([
 
     html.Div([
-        html.Div('Find your information', id = 'top'),
+        html.Div([
+            html.Div(id = 'top'),
+            html.Div([
+                html.Img(src = app.get_asset_url('logo.jpg'))
+            ]),
+            html.Div(id = 'top_bis')
+        ], id = "top_page"),
 
         dcc.Upload(
         id='upload-data',
         children=html.Div([
             'Drag and Drop or ',
             html.A('Select File', style = {'color':'skyblue','textDecoration':'underline'})
-        ]),
+        ], style = {'color':'darkmagenta'}),
         style={
             'height': '60px','lineHeight':'60px','borderWidth': '1px','borderStyle': 'dashed','borderRadius': '5px','textAlign': 'center','backgroundColor':'white' 
         },
@@ -222,10 +229,8 @@ def parse_contents(contents, filename, date):
 
     #Geolocalisation
 
-    #new_merge.set_index('Entity Number')
     list_lat = []
     list_long = []
-    list_city = []
     list_name = []
     
     for n in format_numbers:
@@ -254,16 +259,7 @@ def parse_contents(contents, filename, date):
                 list_lat.append(avg_lat / len(temp.loc[: , 'city']))
                 list_long.append(avg_long / len(temp.loc[: , 'city']))
 
-    for l in list_long:
-        print(l)
-
-    #for i in list(range(len(format_numbers) - 1)):
-        #temp = new_merge.loc[new_merge['Entity Number'] == new_merge.loc[i, 'Entity Number']]
-        #if merge.loc[i , 'city'] in temp.loc[: , 'city']:
-        #print(temp.loc[: , 'city'])
-
-        #print(merge.loc[n, 'city'])
-
+        map_count = len(list_lat)
 
     return html.Div([
 
@@ -298,34 +294,34 @@ def parse_contents(contents, filename, date):
                     n_fixed_rows = 1,
                 ),
 
-                dash_table.DataTable(
-                    id = 't_merge',
-                    columns = [{'name':i, 'id':i} for i in new_merge.columns],
-                    style_cell_conditional=[
-                        {
-                            'if': {'row_index': 'odd'},
-                            'backgroundColor': 'whitesmoke'
-                        }
-                    ],
-                    style_table = { 'overflowX':'scroll','overflowY': 'scroll','maxHeight':'200'},
-                    style_data = {'whitespace':'normal'},
-                    css=[{
-                        'selector': '.dash-cell div.dash-cell-value',
-                        'rule': 'display: inline; white-space: inherit; overflow: inherit; text-overflow: inherit;'
-                    }],
-                    data = new_merge.to_dict("rows"),
-                    style_as_list_view = True,
-                    style_cell={'padding': '5px',
-                                'maxWidth': 0,
-                                'height': 30,
-                                'textAlign': 'center'},
-                    style_header={
-                        'backgroundColor': 'gray',
-                        'fontWeight': 'bold',
-                        'color': 'white'
-                    },
-                    n_fixed_rows = 1,
-                )
+                #dash_table.DataTable(
+                #    id = 't_merge',
+                #    columns = [{'name':i, 'id':i} for i in new_merge.columns],
+                #    style_cell_conditional=[
+                #        {
+                #            'if': {'row_index': 'odd'},
+                #            'backgroundColor': 'whitesmoke'
+                #        }
+                #    ],
+                #    style_table = { 'overflowX':'scroll','overflowY': 'scroll','maxHeight':'200'},
+                #    style_data = {'whitespace':'normal'},
+                #    css=[{
+                #        'selector': '.dash-cell div.dash-cell-value',
+                #        'rule': 'display: inline; white-space: inherit; overflow: inherit; text-overflow: inherit;'
+                #    }],
+                #    data = new_merge.to_dict("rows"),
+                #    style_as_list_view = True,
+                #    style_cell={'padding': '5px',
+                #                'maxWidth': 0,
+                #                'height': 30,
+                #                'textAlign': 'center'},
+                #    style_header={
+                #        'backgroundColor': 'gray',
+                #        'fontWeight': 'bold',
+                #        'color': 'white'
+                #    },
+                #    n_fixed_rows = 1,
+                #)
             ], id = 'div_table'), 
 
             
@@ -393,16 +389,12 @@ def parse_contents(contents, filename, date):
             ], id = 'first_row'),
 
             html.Div([
-                html.Div([
-                    html.P('Based on ' + str(count_date) + ' entities')
-                ], id = "div_count_starting_dates"),
-
-                html.Div([
-                    html.P('Based on ' + str(count_empl)+ ' entities')
-                ], id = "div_count_empl")
 
             ], id = "div_second_count_row"),
 
+            html.Div([
+                    html.P('Based on ' + str(count_date) + ' entities')
+                ], id = "div_count_starting_dates"),
 
             html.Div([
 
@@ -434,7 +426,15 @@ def parse_contents(contents, filename, date):
                     ), 
                 ], id = "div_bar_dates"),
 
-                html.Div([
+                
+            ], id = "second_row"),
+
+            html.Div([
+
+                    html.Div([
+                        html.P('Based on ' + str(count_empl)+ ' entities')
+                    ], id = "div_count_empl"),
+
                     dcc.Graph(
                         id = "graph_employees",
                         figure = {  
@@ -454,8 +454,52 @@ def parse_contents(contents, filename, date):
                         }
                     ),
                 ], id = "div_pie_empl"),
-            ], id = "second_row")
+
+            html.Div([
+                dcc.Graph(
+                    id = "entities_location",
+                    figure = {
+                        'data': [
+                            go.Scattermapbox(
+                                lat = list_lat,
+                                lon = list_long,
+                                mode = 'markers',
+                                marker=go.scattermapbox.Marker(
+                                    size=9
+                                ),
+                            )
+                        ],
+                        'layout': LAYOUT_MAPBOX  
+                    }
+                )
+            ], id = "div_map"),
+
+            html.Div([
+                html.P('This plot was made using the latitudes and longitudes of the postcodes given in the database. Some entities did not match with any cities and may have been located with an average position (based on ' + str(map_count) + ' entities).')
+            ], id = "text_map")
+
+
     ], id = "results")
+
+LAYOUT_MAPBOX = go.Layout(
+
+    title = 'Entities Location',
+    mapbox = go.layout.Mapbox(
+        accesstoken=mapbox_access_token,
+        zoom = 7,
+        center=go.layout.mapbox.Center(
+            lat = 51.0,
+            lon = 4.7
+        ),
+    ),
+    margin = go.layout.Margin(
+            l=30,
+            r=30,
+            b=0,
+            t=40,
+            pad=0
+    ),
+)
 
 def show_loader():
     return(html.Div(id = "loader"))
