@@ -41,7 +41,7 @@ app.layout = html.Div([
     ),
 
     ], id = "header"),
-    
+
     html.Div(id='output-data-upload'),
 
 
@@ -90,7 +90,7 @@ def parse_contents(contents, filename, date):
     data = []
 
     for n in format_numbers:
-        statement.execute("SELECT EntityNumber, JuridicalForm, StartDate, Zipcode, Employees FROM enterprise_addresses WHERE EntityNumber=:number", {"number": n})
+        statement.execute("SELECT EntityNumber, JuridicalForm, StartDate, Zipcode, MunicipalityFR, Employees FROM enterprise_addresses WHERE EntityNumber=:number", {"number": n})
         sql = statement.fetchone()
         if sql != None:
             fetch_numbers.append(sql)
@@ -101,7 +101,7 @@ def parse_contents(contents, filename, date):
             row.append(elt)
         data.append(row)
     
-    frame = pd.DataFrame(data, columns = ['Entity Number','Juridical Form', 'Start Date', 'ZipCode', 'Employees'])
+    frame = pd.DataFrame(data, columns = ['Entity Number','Juridical Form', 'Start Date', 'ZipCode', 'Municipality', 'Employees'])
     #frame = pd.DataFrame(data, columns = ['Entity Number', 'Status', 'Juridical Situation', 'Type of enterprise', 'Juridical Form', 'Start Date'])
 
 
@@ -109,7 +109,7 @@ def parse_contents(contents, filename, date):
     codes['Juridical Form'] = codes['Juridical Form'].astype(float)
     merge = pd.merge(frame, codes, on='Juridical Form')
 
-    geo = pd.read_sql_query('SELECT DISTINCT postcode, long, lat FROM postcode_geo', connection).rename(columns = {'postcode':'ZipCode'})
+    geo = pd.read_sql_query('SELECT postcode, city, lat, long FROM postcode_geo', connection).rename(columns = {'postcode':'ZipCode'})
     geo['ZipCode'] = geo['ZipCode'].astype(str)
     new_merge = pd.merge(merge, geo, on = 'ZipCode')
 
@@ -222,7 +222,55 @@ def parse_contents(contents, filename, date):
 
     #Geolocalisation
 
+    #new_merge.set_index('Entity Number')
+    list_lat = []
+    list_long = []
+    list_city = []
+    list_name = []
+    
+    for n in format_numbers:
+        temp = new_merge.loc[new_merge['Entity Number'] == n]
+        rows = temp.values.tolist()
+        if len(rows) > 0:
+            match = 0
+            latitude = 0
+            longitude = 0
+            avg_lat = 0
+            avg_long = 0
+            for r in rows: 
+                if r[4] == r[7]:
+                    latitude = r[8]
+                    longitude = r[9]
+                    match = 1
+                else:
+                    avg_lat = avg_lat + float(r[8])
+                    avg_long = avg_long + float(r[9])
+                    match = match
+            
+            if match == 1:
+                list_lat.append(latitude)
+                list_long.append(longitude)
+            else:
+                list_lat.append(avg_lat / len(temp.loc[: , 'city']))
+                list_long.append(avg_long / len(temp.loc[: , 'city']))
+
+    for l in list_long:
+        print(l)
+
+    #for i in list(range(len(format_numbers) - 1)):
+        #temp = new_merge.loc[new_merge['Entity Number'] == new_merge.loc[i, 'Entity Number']]
+        #if merge.loc[i , 'city'] in temp.loc[: , 'city']:
+        #print(temp.loc[: , 'city'])
+
+        #print(merge.loc[n, 'city'])
+
+
     return html.Div([
+
+            html.Div([
+                html.P('We found ' + str(len(df.loc[: , "Name"]))+ ' entities in which ' + str(len(format_numbers))+ ' have a correct number')
+
+            ], id = "div_count_entities"),
 
             html.Div([
                 
@@ -249,7 +297,38 @@ def parse_contents(contents, filename, date):
                     },
                     n_fixed_rows = 1,
                 ),
+
+                dash_table.DataTable(
+                    id = 't_merge',
+                    columns = [{'name':i, 'id':i} for i in new_merge.columns],
+                    style_cell_conditional=[
+                        {
+                            'if': {'row_index': 'odd'},
+                            'backgroundColor': 'whitesmoke'
+                        }
+                    ],
+                    style_table = { 'overflowX':'scroll','overflowY': 'scroll','maxHeight':'200'},
+                    style_data = {'whitespace':'normal'},
+                    css=[{
+                        'selector': '.dash-cell div.dash-cell-value',
+                        'rule': 'display: inline; white-space: inherit; overflow: inherit; text-overflow: inherit;'
+                    }],
+                    data = new_merge.to_dict("rows"),
+                    style_as_list_view = True,
+                    style_cell={'padding': '5px',
+                                'maxWidth': 0,
+                                'height': 30,
+                                'textAlign': 'center'},
+                    style_header={
+                        'backgroundColor': 'gray',
+                        'fontWeight': 'bold',
+                        'color': 'white'
+                    },
+                    n_fixed_rows = 1,
+                )
             ], id = 'div_table'), 
+
+            
 
             html.Div([
 
@@ -376,9 +455,10 @@ def parse_contents(contents, filename, date):
                     ),
                 ], id = "div_pie_empl"),
             ], id = "second_row")
-    ], style = {'flex':'1','textAlign':'center', 'justifyContent':'center', 'alignItems':'center','backgroundColor':'lightgray'})
+    ], id = "results")
 
-
+def show_loader():
+    return(html.Div(id = "loader"))
 
 @app.callback(Output('output-data-upload', 'children'),
               [Input('upload-data', 'contents')],
