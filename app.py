@@ -109,8 +109,6 @@ def parse_contents(contents, filename, date):
         data.append(row)
     
     frame = pd.DataFrame(data, columns = ['Entity Number','Juridical Form', 'Start Date', 'ZipCode', 'Municipality', 'Employees'])
-    #frame = pd.DataFrame(data, columns = ['Entity Number', 'Status', 'Juridical Situation', 'Type of enterprise', 'Juridical Form', 'Start Date'])
-
 
     codes = pd.read_sql_query('SELECT Code, Description from code where Language="FR" and Category="JuridicalForm"', connection).rename(columns={'Code': 'Juridical Form'})
     codes['Juridical Form'] = codes['Juridical Form'].astype(float)
@@ -118,7 +116,10 @@ def parse_contents(contents, filename, date):
 
     geo = pd.read_sql_query('SELECT postcode, city, lat, long FROM postcode_geo', connection).rename(columns = {'postcode':'ZipCode'})
     geo['ZipCode'] = geo['ZipCode'].astype(str)
-    new_merge = pd.merge(merge, geo, on = 'ZipCode')
+    new_merge1 = pd.merge(merge, geo, on = 'ZipCode')
+
+    names = pd.read_sql_query('SELECT EntityNumber, Denomination FROM denomination WHERE TypeOfDenomination = "001"', connection).rename(columns={'EntityNumber': 'Entity Number'})
+    new_merge2 = pd.merge(new_merge1, names, on = 'Entity Number')
 
     #Constructions des tableaux de données pour les graph
 
@@ -229,12 +230,13 @@ def parse_contents(contents, filename, date):
 
     #Geolocalisation
 
+
     list_lat = []
     list_long = []
     list_name = []
     
     for n in format_numbers:
-        temp = new_merge.loc[new_merge['Entity Number'] == n]
+        temp = new_merge2.loc[new_merge2['Entity Number'] == n]
         rows = temp.values.tolist()
         if len(rows) > 0:
             match = 0
@@ -242,25 +244,31 @@ def parse_contents(contents, filename, date):
             longitude = 0
             avg_lat = 0
             avg_long = 0
+            entity_name = ''
             for r in rows: 
                 if r[4] == r[7]:
                     latitude = r[8]
                     longitude = r[9]
+                    entity_name = r[10]
                     match = 1
                 else:
                     avg_lat = avg_lat + float(r[8])
                     avg_long = avg_long + float(r[9])
+                    entity_name = r[10]
                     match = match
             
             if match == 1:
                 list_lat.append(latitude)
                 list_long.append(longitude)
+                list_name.append(entity_name)
             else:
                 list_lat.append(avg_lat / len(temp.loc[: , 'city']))
                 list_long.append(avg_long / len(temp.loc[: , 'city']))
+                list_name.append(entity_name)
 
         map_count = len(list_lat)
-
+    
+    
     return html.Div([
 
             html.Div([
@@ -296,7 +304,7 @@ def parse_contents(contents, filename, date):
 
                 #dash_table.DataTable(
                 #    id = 't_merge',
-                #    columns = [{'name':i, 'id':i} for i in new_merge.columns],
+                #    columns = [{'name':i, 'id':i} for i in new_merge2.columns],
                 #    style_cell_conditional=[
                 #        {
                 #            'if': {'row_index': 'odd'},
@@ -309,7 +317,7 @@ def parse_contents(contents, filename, date):
                 #        'selector': '.dash-cell div.dash-cell-value',
                 #        'rule': 'display: inline; white-space: inherit; overflow: inherit; text-overflow: inherit;'
                 #    }],
-                #    data = new_merge.to_dict("rows"),
+                #    data = new_merge2.to_dict("rows"),
                 #    style_as_list_view = True,
                 #    style_cell={'padding': '5px',
                 #                'maxWidth': 0,
@@ -320,8 +328,10 @@ def parse_contents(contents, filename, date):
                 #        'fontWeight': 'bold',
                 #        'color': 'white'
                 #    },
-                #    n_fixed_rows = 1,
+                #    n_fixed_rows = 1,               
                 #)
+
+                
             ], id = 'div_table'), 
 
             
@@ -467,6 +477,7 @@ def parse_contents(contents, filename, date):
                                 marker=go.scattermapbox.Marker(
                                     size=9
                                 ),
+                                text = list_name
                             )
                         ],
                         'layout': LAYOUT_MAPBOX  
@@ -496,7 +507,7 @@ LAYOUT_MAPBOX = go.Layout(
             l=30,
             r=30,
             b=0,
-            t=40,
+            t=80,
             pad=0
     ),
 )
@@ -514,7 +525,6 @@ def update_output(list_of_contents, list_of_names, list_of_dates):
             parse_contents(c, n, d) for c, n, d in
             zip(list_of_contents, list_of_names, list_of_dates)]
         return children
-
 
 
 if __name__ == '__main__':
