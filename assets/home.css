@@ -24,6 +24,10 @@
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
+#header {
+    background-color: black;
+}
   
 #results {
     position: relative;
@@ -45,6 +49,10 @@
     background-color: white;
 }
 
+#logo {
+    height: 130px;
+}
+
 #top {
     background-color: darkmagenta; 
     width: 80%;
@@ -53,10 +61,10 @@
 }
 
 #top_bis {
-    margin-top: 85px;
+    margin-top: 80px;
     height:90%;
     width: 20%;
-    padding: 20px;
+    color : white;
     border-bottom: 5px solid goldenrod
 }
 
@@ -75,7 +83,7 @@
     background-color: white;
     font-size: 200%;
     color : purple;
-    font-weight: bold;
+   
 }
 
 #div_table {
@@ -111,26 +119,27 @@
     height:400px;
     margin-left: auto;
     margin-right: auto;
-    width:590px;
-    font-weight: bold;
+    width:550px;
     color : 'steelblue'
 }
 
 #pie_chart_ages {
     height:400px;
-    width:590px;}
+    width:550px;
+    margin-left: auto;
+    margin-right: auto;
+}
 
 #div_pie_form {
     height:400px;
     margin-left: auto;
     margin-right: auto;
-    width:590px;
-    font-weight: bold;
+    width:550px;
 }
 
 #graph_juridical_form {
     height: 400px; 
-    width:590px;
+    width:550px;
 }
 
 #div_second_count_row {display: flex;}
