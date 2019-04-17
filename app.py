@@ -29,10 +29,7 @@ app.layout = html.Div([
     html.Div([
         html.Div([
             html.Div(id = 'top'),
-            html.Div([
-                html.Img(src = app.get_asset_url('logo.jpg'))
-            ]),
-            html.Div(id = 'top_bis')
+            html.Div('King Baudouin Foundation', id = 'top_bis')
         ], id = "top_page"),
 
         dcc.Upload(
@@ -42,7 +39,7 @@ app.layout = html.Div([
             html.A('Select File', style = {'color':'skyblue','textDecoration':'underline'})
         ], style = {'color':'darkmagenta'}),
         style={
-            'height': '60px','lineHeight':'60px','borderWidth': '1px','borderStyle': 'dashed','borderRadius': '5px','textAlign': 'center','backgroundColor':'white' 
+            'height': '60px','lineHeight':'60px','textAlign': 'center','backgroundColor':'gainsboro'
         },
         multiple=True
     ),
