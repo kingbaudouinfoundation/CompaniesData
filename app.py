@@ -29,20 +29,23 @@ app.layout = html.Div([
     html.Div([
         html.Div([
             html.Div(id = 'top'),
-            html.Div('King Baudouin Foundation', id = 'top_bis')
+            #html.Div('King Baudouin Foundation', id = 'top_bis')
         ], id = "top_page"),
 
-        dcc.Upload(
-        id='upload-data',
-        children=html.Div([
-            'Drag and Drop or ',
-            html.A('Select File', style = {'color':'skyblue','textDecoration':'underline'})
-        ], style = {'color':'darkmagenta'}),
-        style={
-            'height': '60px','lineHeight':'60px','textAlign': 'center','backgroundColor':'gainsboro'
-        },
-        multiple=True
-    ),
+        html.Div([
+
+            dcc.Upload(
+                id='upload-data',
+                children=html.Div([
+                    'Drag and Drop or ',
+                    html.A('Select File', style = {'color':'skyblue','textDecoration':'underline'})
+                ], style = {'color':'black'}),
+                style={
+                    'height': '60px','lineHeight':'60px','textAlign': 'center','backgroundColor':'gainsboro'
+                },
+                multiple=True
+            ),
+        ], id = "div_up")
 
     ], id = "header"),
 
@@ -78,7 +81,8 @@ def parse_contents(contents, filename, date):
     #On formate les numéros sous la forme 0xxx . xxx . xxx 
     format_numbers = []
     for n in numeros:
-        if len(n) == 11:
+        num = str(n)
+        if len(num) == 11:
             s = '0' + '.'.join(n.split())
             format_numbers.append(s)
         #else:
@@ -87,7 +91,6 @@ def parse_contents(contents, filename, date):
 
     ### Connexion à la base de donnée SQLite
     connection = sqlite3.connect('kbo.sqlite3')
-    #print('connection Ok')
     statement = connection.cursor()
 
     fetch_numbers = []
@@ -111,7 +114,7 @@ def parse_contents(contents, filename, date):
     codes['Juridical Form'] = codes['Juridical Form'].astype(float)
     merge = pd.merge(frame, codes, on='Juridical Form')
 
-    geo = pd.read_sql_query('SELECT postcode, city, lat, long FROM postcode_geo', connection).rename(columns = {'postcode':'ZipCode'})
+    geo = pd.read_sql_query('SELECT postcode, city, lat, long, province FROM postcode_geo', connection).rename(columns = {'postcode':'ZipCode'})
     geo['ZipCode'] = geo['ZipCode'].astype(str)
     new_merge1 = pd.merge(merge, geo, on = 'ZipCode')
 
@@ -226,34 +229,32 @@ def parse_contents(contents, filename, date):
     prop_empl.append(P8)
 
     #Geolocalisation
-
-
     list_lat = []
     list_long = []
     list_name = []
+    list_province = []
+    prop_province = []
     
     for n in format_numbers:
         temp = new_merge2.loc[new_merge2['Entity Number'] == n]
         rows = temp.values.tolist()
         if len(rows) > 0:
-            match = 0
-            latitude = 0
-            longitude = 0
-            avg_lat = 0
-            avg_long = 0
+            match = latitue = longitude = avg_lat = avg_long = 0
+            prov = ''
             entity_name = ''
             for r in rows: 
+                if list_province.count(r[10]) == 0:
+                    list_province.append(r[10])
                 if r[4] == r[7]:
                     latitude = r[8]
                     longitude = r[9]
-                    entity_name = r[10]
+                    entity_name = r[11]
                     match = 1
                 else:
                     avg_lat = avg_lat + float(r[8])
                     avg_long = avg_long + float(r[9])
-                    entity_name = r[10]
+                    entity_name = r[11]
                     match = match
-            
             if match == 1:
                 list_lat.append(latitude)
                 list_long.append(longitude)
@@ -262,9 +263,8 @@ def parse_contents(contents, filename, date):
                 list_lat.append(avg_lat / len(temp.loc[: , 'city']))
                 list_long.append(avg_long / len(temp.loc[: , 'city']))
                 list_name.append(entity_name)
+            
 
-        map_count = len(list_lat)
-    
     
     return html.Div([
 
@@ -299,34 +299,34 @@ def parse_contents(contents, filename, date):
                     n_fixed_rows = 1,
                 ),
 
-                #dash_table.DataTable(
-                #    id = 't_merge',
-                #    columns = [{'name':i, 'id':i} for i in new_merge2.columns],
-                #    style_cell_conditional=[
-                #        {
-                #            'if': {'row_index': 'odd'},
-                #            'backgroundColor': 'whitesmoke'
-                #        }
-                #    ],
-                #    style_table = { 'overflowX':'scroll','overflowY': 'scroll','maxHeight':'200'},
-                #    style_data = {'whitespace':'normal'},
-                #    css=[{
-                #        'selector': '.dash-cell div.dash-cell-value',
-                #        'rule': 'display: inline; white-space: inherit; overflow: inherit; text-overflow: inherit;'
-                #    }],
-                #    data = new_merge2.to_dict("rows"),
-                #    style_as_list_view = True,
-                #    style_cell={'padding': '5px',
-                #                'maxWidth': 0,
-                #                'height': 30,
-                #                'textAlign': 'center'},
-                #    style_header={
-                #        'backgroundColor': 'gray',
-                #        'fontWeight': 'bold',
-                #        'color': 'white'
-                #    },
-                #    n_fixed_rows = 1,               
-                #)
+                dash_table.DataTable(
+                    id = 't_merge',
+                    columns = [{'name':i, 'id':i} for i in new_merge2.columns],
+                    style_cell_conditional=[
+                        {
+                            'if': {'row_index': 'odd'},
+                            'backgroundColor': 'whitesmoke'
+                        }
+                    ],
+                    style_table = { 'overflowX':'scroll','overflowY': 'scroll','maxHeight':'200'},
+                    style_data = {'whitespace':'normal'},
+                    css=[{
+                        'selector': '.dash-cell div.dash-cell-value',
+                        'rule': 'display: inline; white-space: inherit; overflow: inherit; text-overflow: inherit;'
+                    }],
+                    data = new_merge2.to_dict("rows"),
+                    style_as_list_view = True,
+                    style_cell={'padding': '5px',
+                                'maxWidth': 0,
+                                'height': 30,
+                                'textAlign': 'center'},
+                    style_header={
+                        'backgroundColor': 'gray',
+                        'fontWeight': 'bold',
+                        'color': 'white'
+                    },
+                    n_fixed_rows = 1,               
+                )
 
                 
             ], id = 'div_table'), 
@@ -483,7 +483,7 @@ def parse_contents(contents, filename, date):
             ], id = "div_map"),
 
             html.Div([
-                html.P('This plot was made using the latitudes and longitudes of the postcodes given in the database. Some entities did not match with any cities and may have been located with an average position (based on ' + str(map_count) + ' entities).')
+                html.P('This plot was made using the latitudes and longitudes of the postcodes given in the database. Some entities did not match with any cities and may have been located with an average position (based on ' + str(len(list_lat)) + ' entities).')
             ], id = "text_map")
 
 
