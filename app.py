@@ -233,7 +233,10 @@ def parse_contents(contents, filename, date):
     list_long = []
     list_name = []
     list_province = []
+    x_province = []
+    y_province = []
     prop_province = []
+    list_prop_province = []
     
     for n in format_numbers:
         temp = new_merge2.loc[new_merge2['Entity Number'] == n]
@@ -244,6 +247,8 @@ def parse_contents(contents, filename, date):
             entity_name = ''
             for r in rows: 
                 if list_province.count(r[10]) == 0:
+                    p = [r[10], 0]
+                    list_prop_province.append(p)
                     list_province.append(r[10])
                 if r[4] == r[7]:
                     latitude = r[8]
@@ -263,7 +268,14 @@ def parse_contents(contents, filename, date):
                 list_lat.append(avg_lat / len(temp.loc[: , 'city']))
                 list_long.append(avg_long / len(temp.loc[: , 'city']))
                 list_name.append(entity_name)
-            
+            line = rows[0]
+            for i in list_prop_province:
+                if line[10] == i[0]:
+                    i[1] = i[1] + 1
+    
+    for i in list_prop_province:
+        x_province.append(i[0])
+        y_province.append(i[1])
 
     
     return html.Div([
@@ -484,10 +496,39 @@ def parse_contents(contents, filename, date):
 
             html.Div([
                 html.P('This plot was made using the latitudes and longitudes of the postcodes given in the database. Some entities did not match with any cities and may have been located with an average position (based on ' + str(len(list_lat)) + ' entities).')
-            ], id = "text_map")
+            ], id = "text_map"),
+
+           
+                dcc.Graph(
+                    id = 'graph_provinces',
+                    figure = {
+                        'data': [
+                            go.Bar (
+                                x = y_province,
+                                y = x_province,
+                                orientation = 'h',
+                                marker = {
+                                        'color':'purple'
+                                    }
+                            ) 
+                        ],
+                        'layout' : LAYOUT_BAR_CHART
+                          
+                        
+                    }
+                )
 
 
     ], id = "results")
+
+LAYOUT_BAR_CHART = go.Layout(
+    title = 'Distribution by province',
+    margin = go.layout.Margin(
+        b = 100,
+        l = 200
+    )
+       
+)
 
 LAYOUT_MAPBOX = go.Layout(
 
@@ -501,8 +542,8 @@ LAYOUT_MAPBOX = go.Layout(
         ),
     ),
     margin = go.layout.Margin(
-            l=30,
-            r=30,
+            l=90,
+            r=90,
             b=0,
             t=80,
             pad=0
