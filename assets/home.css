@@ -26,10 +26,6 @@
 }
 
 
-#header {
-    background-color: white;
-}
-
 #left {
     flex : 0.5;
 }
@@ -58,10 +54,11 @@
 #body_page { 
     display: flex;
     background-color: white;
+    margin:0px;
 }
 
-#logo {
-    height: 130px;
+body {
+    margin:0px;
 }
 
 #div_up {
@@ -91,7 +88,6 @@
     border-bottom: 5px solid goldenrod
 }
 
-#upload-data {padding:0px;}
 
 #selection {
     text-decoration: underline; 
@@ -115,39 +111,19 @@
     padding-bottom:30px;
 }
 
-#div_first_count_row {display: flex;}
-
-#div_count_age {
-    height:40px;
-    margin-left: auto;
-    margin-right: auto;
-    width:490px;
-    color : steelblue;
-    background-color: white;
-    font-weight: bold;
-}
-
-#div_count_description {
-    height:40px;
-    margin-left: auto;
-    margin-right: auto;
-    width:490px;
-    color: indigo;
-    font-weight: bold;
-}
 
 
 #div_pie_ages {
     height:400px;
     margin-left: auto;
     margin-right: auto;
-    width:490px;
+    width:590px;
     color : 'steelblue'
 }
 
 #pie_chart_ages {
     height:400px;
-    width:490px;
+    width:590px;
     margin-left: auto;
     margin-right: auto;
 }
@@ -164,17 +140,6 @@
     width:590px;
 }
 
-#div_second_count_row {display: flex;}
-
-#div_count_starting_dates {
-    height:40px;
-    margin-left: auto;
-    margin-right: auto;
-    width:700px;
-    margin-top :5px;
-    color : goldenrod;
-    font-weight: bold;
-}
 
 #div_count_empl {
     height:40px;
