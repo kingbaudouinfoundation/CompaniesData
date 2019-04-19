@@ -3,6 +3,7 @@ import base64
 import datetime 
 from dash.dependencies import Input, Output, State
 import dash_core_components as dcc
+import dash_bootstrap_components as dbc
 import dash_html_components as html
 import dash_table
 import pandas as pd 
@@ -28,35 +29,75 @@ app.layout = html.Div([
 
     html.Div([
         html.Div([
-            html.Div(id = 'top'),
-            #html.Div('King Baudouin Foundation', id = 'top_bis')
-        ], id = "top_page"),
+           
+            html.Div(' ', style = {'backgroundColor':'lightgrey', 'height':'50px'}),
+            
+            html.Div('Change dataset', id = 'top'),
+            
 
-        html.Div([
+            html.Div([
 
-            dcc.Upload(
-                id='upload-data',
-                children=html.Div([
-                    'Drag and Drop or ',
-                    html.A('Select File', style = {'color':'skyblue','textDecoration':'underline'})
-                ], style = {'color':'black'}),
-                style={
-                    'height': '60px','lineHeight':'60px','textAlign': 'center','backgroundColor':'gainsboro'
-                },
-                multiple=True
-            ),
-        ], id = "div_up")
+                dcc.Upload(
+                    id='upload-data',
+                    children = html.Div([
+                        'Drag and Drop or ',
+                        html.A('Select File', style = {'color':'skyblue','textDecoration':'underline'})
+                    ], style = {'color':'black'}),
+                    style={
+                        'height': '60px','lineHeight':'60px','textAlign': 'center','backgroundColor':'whitesmoke'
+                    },
+                    multiple=True
+                ),
 
-    ], id = "header"),
+            ], id = "div_up"),
 
-    html.Div(id='output-data-upload'),
+            html.Div([
 
+                        html.Div('FILTERS', style = {'color':'white', 'fontSize':'110%','paddingTop':'60px', 'marginLeft':'20px','fontWeight':'bold'}),
+                        html.P('Regions:', style = {'color':'sandybrown', 'marginLeft':'20px','fontWeight':'bold'}),
+                        dcc.Dropdown(
+                            id = 'régions',
+                            style = {'width':'250px', 'backgroundColor':'white', 'marginLeft':'20px'},
+                            options=[
+                                {'label': 'Flandres', 'value': 'Flandre'},
+                                {'label': 'Wallonie', 'value': 'Wallonie'},
+                                {'label': 'Bruxelles', 'value': 'Bruxelles'}
+                                
+                            ],
+                            multi = 'True'
+                        ),
 
-    
+                        html.P('Size:', style = {'color':'sandybrown','marginLeft':'20px','fontWeight':'bold'}),
+                        dcc.Dropdown(
+                            id = 'taille',
+                            style = {'width':'250px', 'backgroundColor':'white', 'marginLeft':'20px'},
+                            options = [
+                                {'label':'Petite', 'value':'Petite'},
+                                {'label':'Grande', 'value':'Grande'},
+                                {'label':'Très Grande', 'value': 'Très Grande'}
+                            ],
+                            multi = 'True'
+                        )
+
+            ],id = "left2")
+        
+        ])
+
+    ], id = "left"),
+
+    html.Div([
+
+        html.Div(' ', style = {'backgroundColor':'lightgrey', 'height':'50px'}),
+        html.Div('Upload a dataset and see your results below', style = {'color':'mediumvioletred','fontSize':'130%','marginTop':'40px', 'fontWeight':'bold'}),
+        html.Div(id='output-data-upload'),
+
+    ], id = "right")
+ 
 ], id = "body_page")
 
 
 def parse_contents(contents, filename, date):
+
     content_type, content_string = contents.split(',')
 
     decoded = base64.b64decode(content_string)
@@ -277,85 +318,74 @@ def parse_contents(contents, filename, date):
         x_province.append(i[0])
         y_province.append(i[1])
 
-    
+
     return html.Div([
 
             html.Div([
                 html.P('We found ' + str(len(df.loc[: , "Name"]))+ ' entities in which ' + str(len(format_numbers))+ ' have a correct number')
 
             ], id = "div_count_entities"),
-
+            
             html.Div([
                 
-                dash_table.DataTable(
-                    id = 'table',
-                    columns = [{'name':i, 'id':i} for i in df.columns],
-                    style_cell_conditional=[
-                        {
-                            'if': {'row_index': 'odd'},
-                            'backgroundColor': 'whitesmoke'
-                        }
-                    ],
-                    style_table = { 'overflowX':'scroll','overflowY': 'scroll','maxHeight':'200'},
-                    data = df.to_dict("rows"),
-                    style_as_list_view = True,
-                    style_cell={'padding': '5px',
-                                'maxWidth': 0,
-                                'height': 30,
-                                'textAlign': 'center'},
-                    style_header={
-                        'backgroundColor': 'gray',
-                        'fontWeight': 'bold',
-                        'color': 'white'
-                    },
-                    n_fixed_rows = 1,
-                ),
+                
+                #dash_table.DataTable(
+                #    id = 'table',
+                #    columns = [{'name':i, 'id':i} for i in df.columns],
+                #    style_cell_conditional=[
+                #        {
+                #            'if': {'row_index': 'odd'},
+                #            'backgroundColor': 'whitesmoke'
+                #        }
+                #    ],
+                #    style_table = { 'overflowX':'scroll','overflowY': 'scroll','maxHeight':'200'},
+                #    data = df.to_dict("rows"),
+                #    style_as_list_view = True,
+                #    style_cell={'padding': '5px',
+                #                'maxWidth': 0,
+                #                'height': 30,
+                #                'textAlign': 'center'},
+                #    style_header={
+                #        'backgroundColor': 'gray',
+                #        'fontWeight': 'bold',
+                #        'color': 'white'
+                #    },
+                #    n_fixed_rows = 1,
+                #),
 
-                dash_table.DataTable(
-                    id = 't_merge',
-                    columns = [{'name':i, 'id':i} for i in new_merge2.columns],
-                    style_cell_conditional=[
-                        {
-                            'if': {'row_index': 'odd'},
-                            'backgroundColor': 'whitesmoke'
-                        }
-                    ],
-                    style_table = { 'overflowX':'scroll','overflowY': 'scroll','maxHeight':'200'},
-                    style_data = {'whitespace':'normal'},
-                    css=[{
-                        'selector': '.dash-cell div.dash-cell-value',
-                        'rule': 'display: inline; white-space: inherit; overflow: inherit; text-overflow: inherit;'
-                    }],
-                    data = new_merge2.to_dict("rows"),
-                    style_as_list_view = True,
-                    style_cell={'padding': '5px',
-                                'maxWidth': 0,
-                                'height': 30,
-                                'textAlign': 'center'},
-                    style_header={
-                        'backgroundColor': 'gray',
-                        'fontWeight': 'bold',
-                        'color': 'white'
-                    },
-                    n_fixed_rows = 1,               
-                )
+                #dash_table.DataTable(
+                #    id = 't_merge',
+                #    columns = [{'name':i, 'id':i} for i in new_merge2.columns],
+                #    style_cell_conditional=[
+                #        {
+                #            'if': {'row_index': 'odd'},
+                #            'backgroundColor': 'whitesmoke'
+                #        }
+                #    ],
+                #    style_table = { 'overflowX':'scroll','overflowY': 'scroll','maxHeight':'200'},
+                #    style_data = {'whitespace':'normal'},
+                #    css=[{
+                #        'selector': '.dash-cell div.dash-cell-value',
+                #        'rule': 'display: inline; white-space: inherit; overflow: inherit; text-overflow: inherit;'
+                #    }],
+                #    data = new_merge2.to_dict("rows"),
+                #    style_as_list_view = True,
+                #    style_cell={'padding': '5px',
+                #                'maxWidth': 0,
+                #                'height': 30,
+                #                'textAlign': 'center'},
+                #    style_header={
+                #        'backgroundColor': 'gray',
+                #        'fontWeight': 'bold',
+                #        'color': 'white'
+                #    },
+                #    n_fixed_rows = 1,               
+                #)
+                
 
                 
             ], id = 'div_table'), 
-
             
-
-            html.Div([
-
-                html.Div([
-                    html.P('Based on ' + str(len(year)) + ' entities')
-                ], id = "div_count_age"),
-
-                html.Div([
-                    html.P('Based on ' + str(len(all_descriptions)) + ' entities')
-                ], id = "div_count_description")
-
-            ], id = "div_first_count_row"),
 
             html.Div([
                 
@@ -374,7 +404,7 @@ def parse_contents(contents, filename, date):
                             )
                         ],
                         'layout': {
-                            'title': 'Enterprises age'
+                            'title': 'Enterprises age (Based on ' + str(len(year)) + ' entities)'
                         }
                     }
                 ),
@@ -396,7 +426,7 @@ def parse_contents(contents, filename, date):
                             )
                         ],
                         'layout': {
-                            'title':'Distribution by Juridical Form',
+                            'title':'Distribution by Juridical Form (Based on ' + str(len(all_descriptions)) + ' entities)',
                             
                         }  
                     }
@@ -406,14 +436,6 @@ def parse_contents(contents, filename, date):
 
                 
             ], id = 'first_row'),
-
-            html.Div([
-
-            ], id = "div_second_count_row"),
-
-            html.Div([
-                    html.P('Based on ' + str(count_date) + ' entities')
-                ], id = "div_count_starting_dates"),
 
             html.Div([
 
@@ -431,7 +453,7 @@ def parse_contents(contents, filename, date):
                                 )
                             ],
                             'layout': {
-                                'title': 'Starting Dates Histogram',
+                                'title': 'Starting Dates Histogram (Based on ' + str(count_date) + ' entities)',
                                 'xaxis':{
                                     'title':'year',
                                     'tickmode':'auto',
@@ -450,10 +472,6 @@ def parse_contents(contents, filename, date):
 
             html.Div([
 
-                    html.Div([
-                        html.P('Based on ' + str(count_empl)+ ' entities')
-                    ], id = "div_count_empl"),
-
                     dcc.Graph(
                         id = "graph_employees",
                         figure = {  
@@ -468,7 +486,7 @@ def parse_contents(contents, filename, date):
                                 )
                             ],
                             'layout': {
-                                'title':'Number of employees per entity',
+                                'title':'Number of employees per entity (Based on ' + str(count_empl)+ ' entities)',
                             }  
                         }
                     ),
@@ -542,16 +560,14 @@ LAYOUT_MAPBOX = go.Layout(
         ),
     ),
     margin = go.layout.Margin(
-            l=90,
-            r=90,
+            l=120,
+            r=120,
             b=0,
             t=80,
             pad=0
     ),
 )
 
-def show_loader():
-    return(html.Div(id = "loader"))
 
 @app.callback(Output('output-data-upload', 'children'),
               [Input('upload-data', 'contents')],
@@ -563,6 +579,7 @@ def update_output(list_of_contents, list_of_names, list_of_dates):
             parse_contents(c, n, d) for c, n, d in
             zip(list_of_contents, list_of_names, list_of_dates)]
         return children
+
 
 
 if __name__ == '__main__':
