@@ -29,6 +29,22 @@
 #header {
     background-color: white;
 }
+
+#left {
+    flex : 0.5;
+}
+
+#left2 {
+    height : 4000px;
+    background-color: rgb(14, 36, 32);    
+}
+
+#right {
+    flex: 2.5;
+    align-content: center;
+    align-items: center;
+    text-align: center;
+}
   
 #results {
     position: relative;
@@ -38,17 +54,9 @@
     animation-duration: 3s
   }
 
-  /*
-#top_page {
-    display: flex;
-}
-*/
 
 #body_page { 
-    flex: 1; 
-    align-items: center; 
-    text-align: center; 
-    justify-content: center; 
+    display: flex;
     background-color: white;
 }
 
@@ -58,19 +66,21 @@
 
 #div_up {
     background-color: white;
-    border: 5px solid white;
-    width: 500px;
+    border: 5px solid lightgray;
+    width: 300px;
     margin-left: auto;
     margin-right: auto;
     
 }
 
 #top {
-    background-color: steelblue; 
-    width: 100%;
+    color:white;
+    padding-top: 60px;
+    text-align: center;
+    background-color: rgb(14, 36, 32);    
     margin-right: auto;
     margin-left: auto;
-    height: 90px; 
+    height: 40px; 
 }
 
 #top_bis {
@@ -94,7 +104,7 @@
     margin-right: 20px;
     margin-bottom: 10px;
     background-color: white;
-    font-size: 200%;
+    font-size: 100%;
     color : purple;
    
 }
@@ -111,7 +121,7 @@
     height:40px;
     margin-left: auto;
     margin-right: auto;
-    width:590px;
+    width:490px;
     color : steelblue;
     background-color: white;
     font-weight: bold;
@@ -121,24 +131,23 @@
     height:40px;
     margin-left: auto;
     margin-right: auto;
-    width:590px;
+    width:490px;
     color: indigo;
     font-weight: bold;
 }
 
-#first_row {display: flex;}
 
 #div_pie_ages {
     height:400px;
     margin-left: auto;
     margin-right: auto;
-    width:550px;
+    width:490px;
     color : 'steelblue'
 }
 
 #pie_chart_ages {
     height:400px;
-    width:550px;
+    width:490px;
     margin-left: auto;
     margin-right: auto;
 }
@@ -147,12 +156,12 @@
     height:400px;
     margin-left: auto;
     margin-right: auto;
-    width:550px;
+    width:590px;
 }
 
 #graph_juridical_form {
     height: 400px; 
-    width:550px;
+    width:590px;
 }
 
 #div_second_count_row {display: flex;}
@@ -161,7 +170,7 @@
     height:40px;
     margin-left: auto;
     margin-right: auto;
-    width:750px;
+    width:700px;
     margin-top :5px;
     color : goldenrod;
     font-weight: bold;
@@ -208,13 +217,13 @@
 
 #entities_location {
     height: 400;
-    width: 1000;
+    width: 700;
 }
 
 #text_map {
     margin-left: auto;
     margin-right: auto;
-    width: 1100px;
+    width: 700px;
     color : lightslategrey;
     font-weight: bold;
 }
