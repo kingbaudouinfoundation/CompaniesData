@@ -255,6 +255,22 @@ def build_data_geolocation(tab, frame, num):
 
     return list_lat, list_long, list_name, x_province, y_province
 
+def create_dict_regions():
+    dict_regions = dict()
+    dict_regions['Bruxelles (19 communes)'] = 'Bruxelles'
+    dict_regions['Brabant Wallon'] = 'Wallonie'
+    dict_regions['Brabant Flamand'] = 'Flandre'
+    dict_regions['Anvers'] = 'Flandre'
+    dict_regions['Limbourg'] = 'Flandre'
+    dict_regions['Liège'] = 'Wallonie'
+    dict_regions['Namur'] = 'Wallonie'
+    dict_regions['Hainaut'] = 'Wallonie'
+    dict_regions['Luxembourg'] = 'Wallonie'
+    dict_regions['Flandre-Occidentale'] = 'Flandre'
+    dict_regions['Flandre-Orientale'] = 'Flandre'
+
+    return dict_regions
+
 
 @cache.memoize(timeout = TIMEOUT)
 def parse_contents(contents, filename, date):
@@ -315,6 +331,11 @@ def parse_contents(contents, filename, date):
 
     #Geolocalisation et répartition par province
     list_lat, list_long, list_name, x_province, y_province = build_data_geolocation(new_merge['EntityNumber'], new_merge, format_numbers)
+
+    #datas pour les filtres
+    new_dict = create_dict_regions()
+    print(new_dict)
+
 
     
     return html.Div([
