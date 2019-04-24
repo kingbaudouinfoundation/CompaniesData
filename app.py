@@ -2,6 +2,7 @@ import dash
 import base64
 import datetime 
 from dash.dependencies import Input, Output, State
+from flask_caching import Cache
 import dash_core_components as dcc
 import dash_bootstrap_components as dbc
 import dash_html_components as html
@@ -15,13 +16,17 @@ import sqlite3
 
 mapbox_access_token = 'pk.eyJ1IjoidGhvbWFzdnJvIiwiYSI6ImNqdWI5Y2JxdjBhYW40NnBpa2RhcHBnb3kifQ.9N4rhGAGmo9zqnXOlt-WOw'
 
-DEFAULT_COLOURS_1 = ['steelblue', 'purple', 'darktruquoise', 'mediumseagreen', 'palegoldenrod', 'lightblue']
-DEFAULT_COLOURS_2 = ['indigo', 'gold', 'darkorange']
+DEFAULT_COLOURS_1 = ['maroon', 'coral', 'darktruquoise', 'chocolate', 'palegoldenrod', 'lightblue']
+DEFAULT_COLOURS_2 = ['firebrick', 'lightcoral', 'tomato']
 DEFAULT_COLOURS_3 = ['darkred', 'indianred', 'lemonchiffon', 'lightsalmon', 'orange', 'mediumorchid']
 
-numeros = []
-
 app = dash.Dash(__name__)
+cache = Cache(app.server, config = {
+    'CACHE_TYPE': 'filesystem',
+    'CACHE_DIR': 'cache-directory'
+})
+
+TIMEOUT = 60
 
 app.title = 'Companies Data'
 
@@ -72,9 +77,9 @@ app.layout = html.Div([
                             id = 'taille',
                             style = {'width':'250px', 'backgroundColor':'white', 'marginLeft':'20px'},
                             options = [
-                                {'label':'Petite', 'value':'Petite'},
-                                {'label':'Grande', 'value':'Grande'},
-                                {'label':'Très Grande', 'value': 'Très Grande'}
+                                {'label':'Small', 'value':'Small'},
+                                {'label':'Big', 'value':'Big'},
+                                {'label':'Huge', 'value': 'Huge'}
                             ],
                             multi = 'True'
                         )
@@ -95,141 +100,69 @@ app.layout = html.Div([
  
 ], id = "body_page")
 
-
-def parse_contents(contents, filename, date):
-
+@cache.memoize(timeout = TIMEOUT)
+def create_dataframe(name, contents):
     content_type, content_string = contents.split(',')
-
     decoded = base64.b64decode(content_string)
     try:
-        if 'csv' in filename:
+        if 'csv' in name:
             df = pd.read_csv(
                 io.StringIO(decoded.decode('utf-8')))
-        elif 'xls' in filename:
+            return df
+        elif 'xls' in name:
             df = pd.read_excel(io.BytesIO(decoded))
+            return df
     except Exception as e:
         print(e)
         return html.Div([
             'There was an error processing this file.'
         ])
 
-    #On récupère les numéros présents dans le csv 
-    numeros = df['Ondernemingsnummer'].values
-    df.rename(columns = {'Naam':'Name'}, inplace = True)
-    df.rename(columns = {'Ondernemingsnummer':'Entity Number'}, inplace = True)
-
-
-    #On formate les numéros sous la forme 0xxx . xxx . xxx 
-    format_numbers = []
-    for n in numeros:
-        num = str(n)
-        if len(num) == 11:
-            s = '0' + '.'.join(n.split())
-            format_numbers.append(s)
-        #else:
-        #   format_numbers.append(n)
- 
-
-    ### Connexion à la base de donnée SQLite
-    connection = sqlite3.connect('kbo.sqlite3')
-    statement = connection.cursor()
-
-    fetch_numbers = []
-    data = []
-
-    for n in format_numbers:
-        statement.execute("SELECT EntityNumber, JuridicalForm, StartDate, Zipcode, MunicipalityFR, Employees FROM enterprise_addresses WHERE EntityNumber=:number", {"number": n})
-        sql = statement.fetchone()
-        if sql != None:
-            fetch_numbers.append(sql)
-
-    for line in fetch_numbers:
-        row = []
-        for elt in line:
-            row.append(elt)
-        data.append(row)
-    
-    frame = pd.DataFrame(data, columns = ['Entity Number','Juridical Form', 'Start Date', 'ZipCode', 'Municipality', 'Employees'])
-
-    codes = pd.read_sql_query('SELECT Code, Description from code where Language="FR" and Category="JuridicalForm"', connection).rename(columns={'Code': 'Juridical Form'})
-    codes['Juridical Form'] = codes['Juridical Form'].astype(float)
-    merge = pd.merge(frame, codes, on='Juridical Form')
-
-    geo = pd.read_sql_query('SELECT postcode, city, lat, long, province FROM postcode_geo', connection).rename(columns = {'postcode':'ZipCode'})
-    geo['ZipCode'] = geo['ZipCode'].astype(str)
-    new_merge1 = pd.merge(merge, geo, on = 'ZipCode')
-
-    names = pd.read_sql_query('SELECT EntityNumber, Denomination FROM denomination WHERE TypeOfDenomination = "001"', connection).rename(columns={'EntityNumber': 'Entity Number'})
-    new_merge2 = pd.merge(new_merge1, names, on = 'Entity Number')
-
-    #Constructions des tableaux de données pour les graph
-
-    #Pour le graph des formes juridiques
-    all_descriptions = merge.loc[: , "Description"]
-    descriptions = []
-    descriptions_prop = []
-
-    for d in all_descriptions:
-        if descriptions.count(d) == 0:
-            descriptions.append(d)
-            c = all_descriptions.eq(d).sum()
-            descriptions_prop.append(c)
-    
-    #Histogramme des dates de début des entreprises
-    all_dates = merge.loc[: , "Start Date"]
-    
+def build_data_starting_date(tab):
     x = []
     year = []
     year_prop = []
 
-    for d in all_dates:
-        string = d.split('-')
-        new_date = string[2]
-        year.append(new_date)
+    year = [d.split('-')[2] for d in tab]
+    x = [d for d in year if x.count(d) == 0]
+    year_prop = [year.count(d) for d in year]
 
-    for d in year:
-        if x.count(d) == 0:
-            x.append(d)
-            c = year.count(d)
-            year_prop.append(c)
-    
-    #Pie chart de l'age des entreprises
+    return x, year_prop, year
 
+def build_data_entities_age(tab):
     this_year = datetime.datetime.now()
     current_year = int(this_year.year)
-
-    #Calcul de la répartition des tranches d'age
     size = ['1 to 5 year', '5 to 10 year', '10 to 15 year', '15 to 20 year', 'More than 20 year']
     part = []
     C1 = C2 = C3 = C4 = C5 = 0
 
     count_date = 0
-    for d in year:
+    for d in tab:
         if d is not None:
             if current_year - int(d) < 5:
                 C1 = C1 + 1
-            if current_year - int(d) > 5 and current_year - int(d) < 10:
+            elif current_year - int(d) > 5 and current_year - int(d) < 10:
                 C2 = C2 + 1
-            if current_year - int(d) > 10 and current_year - int(d) < 15:
+            elif current_year - int(d) > 10 and current_year - int(d) < 15:
                 C3 = C3 + 1
-            if current_year - int(d) > 15 and current_year - int(d) < 20:
+            elif current_year - int(d) > 15 and current_year - int(d) < 20:
                 C4 = C4 + 1
-            if current_year - int(d) > 20:
+            elif current_year - int(d) > 20:
                 C5 = C5 + 1
             count_date = count_date + 1
             
-    
     part.append(C1)
     part.append(C2)
     part.append(C3)
     part.append(C4)
     part.append(C5)
 
-    #Nombre d'employés
+    return size, part, count_date
+
+def build_data_employees(tab):
     count_empl = 0
     tab_emp = []
-    all_employees = merge.loc[: , "Employees"]
-    for e in all_employees:
+    for e in tab:
         if e is not None:
             e = e.replace(' trav.', '')
             e = e.split(' &agrave; ')
@@ -245,31 +178,33 @@ def parse_contents(contents, filename, date):
             diff = int(row[1]) - int(row[0])
             if diff <= 5:
                 P1 = P1 + 1
-            if diff >= 5 and diff <= 10:
+            elif diff >= 5 and diff <= 10:
                 P2 = P2 + 1
-            if diff >= 10 and diff <= 20:
+            elif diff >= 10 and diff <= 20:
                 P3 = P3 + 1
-            if diff >= 20 and diff <= 50:
-                P4 = P4 + 1
-            if diff >= 50 and diff <= 100:
+            elif diff >= 20 and diff <= 50:
+                P4 = P4 + 1 
+            elif diff >= 50 and diff <= 100:
                 P5 = P5 + 1 
-            if diff>= 100 and diff <= 500:
-                P6 = P6 + 1
-            if diff >= 500 and diff <= 1000:
+            elif diff>= 100 and diff <= 500:
+                P6 = P6 + 1 
+            elif diff >= 500 and diff <= 1000:
                 P7 = P7 + 1
-        if len(row) == 1 and row[0] is not None:
+        elif len(row) == 1 and row[0] is not None:
             P8 = P8 + 1
-    
+        
     prop_empl.append(P1)
-    prop_empl.append(P2)
+    prop_empl.append(P2) 
     prop_empl.append(P3)
-    prop_empl.append(P4)
+    prop_empl.append(P4)        
     prop_empl.append(P5)
-    prop_empl.append(P6)
+    prop_empl.append(P6) 
     prop_empl.append(P7)
     prop_empl.append(P8)
 
-    #Geolocalisation
+    return empl, prop_empl, count_empl
+
+def build_data_geolocation(tab, frame, num):
     list_lat = []
     list_long = []
     list_name = []
@@ -279,8 +214,8 @@ def parse_contents(contents, filename, date):
     prop_province = []
     list_prop_province = []
     
-    for n in format_numbers:
-        temp = new_merge2.loc[new_merge2['Entity Number'] == n]
+    for n in num:
+        temp = frame.loc[tab == n]
         rows = temp.values.tolist()
         if len(rows) > 0:
             match = latitue = longitude = avg_lat = avg_long = 0
@@ -291,7 +226,7 @@ def parse_contents(contents, filename, date):
                     p = [r[10], 0]
                     list_prop_province.append(p)
                     list_province.append(r[10])
-                if r[4] == r[7]:
+                elif r[4] == r[7]:
                     latitude = r[8]
                     longitude = r[9]
                     entity_name = r[11]
@@ -318,7 +253,70 @@ def parse_contents(contents, filename, date):
         x_province.append(i[0])
         y_province.append(i[1])
 
+    return list_lat, list_long, list_name, x_province, y_province
 
+
+@cache.memoize(timeout = TIMEOUT)
+def parse_contents(contents, filename, date):
+
+    df = create_dataframe(filename, contents)
+
+    #On récupère les numéros présents dans le csv 
+    numeros = []
+    numeros = df['Ondernemingsnummer'].values
+    df.rename(columns = {'Naam':'Name'}, inplace = True)
+    #df.rename(columns = {'Ondernemingsnummer':'Entity Number'}, inplace = True)
+
+    #On formate les numéros sous la forme 0xxx . xxx . xxx 
+    format_numbers = ['0' + '.'.join(n.split()) for n in numeros if len(n) == 11]
+        
+    ### Connexion à la base de donnée SQLite
+    connection = sqlite3.connect('kbo.sqlite3')
+    statement = connection.cursor()
+
+    query = 'SELECT EntityNumber, JuridicalForm, StartDate, Zipcode, MunicipalityFR, Employees FROM enterprise_addresses WHERE EntityNumber in' + str(tuple(format_numbers))
+    frame = pd.read_sql_query(query, connection)
+
+    query = 'SELECT Code, Description from code where Language="FR" and Category="JuridicalForm"'
+    codes = pd.read_sql_query(query, connection).rename(columns={'Code': 'JuridicalForm'})
+    codes['JuridicalForm'] = codes['JuridicalForm'].astype(float)
+
+    merge = pd.merge(frame, codes, on='JuridicalForm')
+
+    query = 'SELECT postcode, city, lat, long, province FROM postcode_geo'
+    geo = pd.read_sql_query(query, connection).rename(columns = {'postcode':'Zipcode'})
+    geo['Zipcode'] = geo['Zipcode'].astype(str)
+
+    new_merge = pd.merge(merge, geo, on = 'Zipcode')
+
+    query = 'SELECT EntityNumber, Denomination FROM denomination WHERE TypeOfDenomination = "001"'
+    names = pd.read_sql_query(query, connection)
+
+    new_merge = pd.merge(new_merge, names, on = 'EntityNumber')
+
+    #Constructions des tableaux de données pour les graph
+
+    #Pour le graph des formes juridiques
+    descriptionsF = merge[['EntityNumber','Description']].groupby('Description').size().to_frame('count')
+    
+    descriptions = descriptionsF.index.tolist()
+    descriptions_prop = descriptionsF.loc[: , 'count']
+
+    
+    #Histogramme des dates de début des entreprises
+    x, year_prop, year = build_data_starting_date(merge.loc[: , "StartDate"])
+    
+    #Pie chart de l'age des entreprises
+    size, part, count_date = build_data_entities_age(year)
+    
+    #Nombre d'employés
+    empl, prop_empl, count_empl = build_data_employees(merge.loc[: , "Employees"])
+    
+
+    #Geolocalisation et répartition par province
+    list_lat, list_long, list_name, x_province, y_province = build_data_geolocation(new_merge['EntityNumber'], new_merge, format_numbers)
+
+    
     return html.Div([
 
             html.Div([
@@ -326,68 +324,31 @@ def parse_contents(contents, filename, date):
 
             ], id = "div_count_entities"),
             
-            html.Div([
-                
-                
-                #dash_table.DataTable(
-                #    id = 'table',
-                #    columns = [{'name':i, 'id':i} for i in df.columns],
-                #    style_cell_conditional=[
-                #        {
-                #            'if': {'row_index': 'odd'},
-                #            'backgroundColor': 'whitesmoke'
-                #        }
-                #    ],
-                #    style_table = { 'overflowX':'scroll','overflowY': 'scroll','maxHeight':'200'},
-                #    data = df.to_dict("rows"),
-                #    style_as_list_view = True,
-                #    style_cell={'padding': '5px',
-                #                'maxWidth': 0,
-                #                'height': 30,
-                #                'textAlign': 'center'},
-                #    style_header={
-                #        'backgroundColor': 'gray',
-                #        'fontWeight': 'bold',
-                #        'color': 'white'
-                #    },
-                #    n_fixed_rows = 1,
-                #),
-
-                #dash_table.DataTable(
-                #    id = 't_merge',
-                #    columns = [{'name':i, 'id':i} for i in new_merge2.columns],
-                #    style_cell_conditional=[
-                #        {
-                #            'if': {'row_index': 'odd'},
-                #            'backgroundColor': 'whitesmoke'
-                #        }
-                #    ],
-                #    style_table = { 'overflowX':'scroll','overflowY': 'scroll','maxHeight':'200'},
-                #    style_data = {'whitespace':'normal'},
-                #    css=[{
-                #        'selector': '.dash-cell div.dash-cell-value',
-                #        'rule': 'display: inline; white-space: inherit; overflow: inherit; text-overflow: inherit;'
-                #    }],
-                #    data = new_merge2.to_dict("rows"),
-                #    style_as_list_view = True,
-                #    style_cell={'padding': '5px',
-                #                'maxWidth': 0,
-                #                'height': 30,
-                #                'textAlign': 'center'},
-                #    style_header={
-                #        'backgroundColor': 'gray',
-                #        'fontWeight': 'bold',
-                #        'color': 'white'
-                #    },
-                #    n_fixed_rows = 1,               
-                #)
-                
-
-                
-            ], id = 'div_table'), 
-            
 
             html.Div([
+
+                 html.Div([
+                    dcc.Graph(
+                        id = "graph_juridical_form",
+                        figure = {  
+                        'data': [    
+                            go.Bar(
+                                    x = descriptions,
+                                    y = descriptions_prop,
+                                    marker = {
+                                        'color': DEFAULT_COLOURS_2
+                                    }
+                                )
+                            ],
+                            'layout': {
+                                'title':'Distribution by Juridical Form (Based on ' + str(len(merge.loc[:, "Description"])) + ' entities)',
+                                
+                            }  
+                        }
+                    ),
+
+                ], id = "div_pie_form"),
+
                 
                 html.Div([
                     dcc.Graph(
@@ -411,29 +372,7 @@ def parse_contents(contents, filename, date):
 
                 ], id = "div_pie_ages"),
                 
-                html.Div([
-                    dcc.Graph(
-                    id = "graph_juridical_form",
-                    figure = {  
-                       'data': [    
-                           go.Pie(
-                                labels = descriptions,
-                                values = descriptions_prop,
-                                hole = .5,
-                                marker = {
-                                    'colors': DEFAULT_COLOURS_2
-                                }
-                            )
-                        ],
-                        'layout': {
-                            'title':'Distribution by Juridical Form (Based on ' + str(len(all_descriptions)) + ' entities)',
-                            
-                        }  
-                    }
-                    ),
-
-                ], id = "div_pie_form"),
-
+               
                 
             ], id = 'first_row'),
 
@@ -504,7 +443,8 @@ def parse_contents(contents, filename, date):
                                 marker=go.scattermapbox.Marker(
                                     size=9
                                 ),
-                                text = list_name
+                                text = list_name,
+                                hoverinfo = 'text'
                             )
                         ],
                         'layout': LAYOUT_MAPBOX  
@@ -553,6 +493,7 @@ LAYOUT_MAPBOX = go.Layout(
     title = 'Entities Location',
     mapbox = go.layout.Mapbox(
         accesstoken=mapbox_access_token,
+        style = 'mapbox://styles/thomasvro/cjuv6sffh09s01foj7rn28quj',
         zoom = 7,
         center=go.layout.mapbox.Center(
             lat = 51.0,
