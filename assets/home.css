@@ -1,3 +1,7 @@
+._dash-undo-redo {
+    display: none;
+}
+
 #loader {
     position: absolute;
     left: 50%;
@@ -132,12 +136,13 @@ body {
     height:400px;
     margin-left: auto;
     margin-right: auto;
-    width:590px;
+    margin-bottom: 50px;
+    width:700px;
 }
 
 #graph_juridical_form {
     height: 400px; 
-    width:590px;
+    width:700px;
 }
 
 
@@ -169,9 +174,7 @@ body {
     margin-left: auto;
     margin-right: auto;
     margin-top: 50px;
-    width:530px;
-    color : darkred;
-    font-weight: bold;
+    width:600px;
 }
 
 #graph_employees {
