@@ -2,32 +2,9 @@
     display: none;
 }
 
-#loader {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    z-index: 1;
-    width: 150px;
-    height: 150px;
-    margin: -75px 0 0 -75px;
-    border: 16px solid #f3f3f3;
-    border-radius: 50%;
-    border-top: 16px solid steelblue;
-    width: 120px;
-    height: 120px;
-    -webkit-animation: spin 2s linear infinite;
-    animation: spin 2s linear infinite;
-  }
-
-@-webkit-keyframes spin {
-    0% { -webkit-transform: rotate(0deg); }
-    100% { -webkit-transform: rotate(360deg); }
-}
-  
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
+.modebar {
+    display: none !important;
+    }
 
 
 #left {
@@ -46,14 +23,6 @@
     text-align: center;
 }
   
-#results {
-    position: relative;
-    -webkit-animation-name: animatebottom;
-    -webkit-animation-duration: 1s;
-    animation-name: animatebottom;
-    animation-duration: 3s
-  }
-
 
 #body_page { 
     display: flex;
@@ -84,122 +53,4 @@ body {
     height: 40px; 
 }
 
-#top_bis {
-    margin-top: 80px;
-    height:90%;
-    width: 20%;
-    color : slategrey;
-    border-bottom: 5px solid goldenrod
-}
 
-
-#selection {
-    text-decoration: underline; 
-    text-decoration-color: skyblue; 
-    color: skyblue;
-}
-
-#div_count_entities {
-    margin-left: 20px;
-    margin-right: 20px;
-    margin-bottom: 10px;
-    background-color: white;
-    font-size: 100%;
-    color : purple;
-   
-}
-
-#div_table {
-    padding-Left:20px; 
-    padding-right:20px;
-    padding-bottom:30px;
-}
-
-
-
-#div_pie_ages {
-    height:400px;
-    margin-left: auto;
-    margin-right: auto;
-    width:590px;
-    color : 'steelblue'
-}
-
-#pie_chart_ages {
-    height:400px;
-    width:590px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-#div_pie_form {
-    height:400px;
-    margin-left: auto;
-    margin-right: auto;
-    margin-bottom: 50px;
-    width:700px;
-}
-
-#graph_juridical_form {
-    height: 400px; 
-    width:700px;
-}
-
-
-#div_count_empl {
-    height:40px;
-    margin-left: auto;
-    margin-right: auto;
-    width:430px;
-    margin-top :5px;
-    background-color: white;
-}
-
-#second_row {display: flex;}
-
-#div_bar_dates {
-    height:500px;
-    margin-left: auto;
-    margin-right: auto;
-    width:900px;
-}
-
-#starting_dates {
-    height: 500px; 
-    width: 900px;
-}
-
-#div_pie_empl {
-    height:500px;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 50px;
-    width:600px;
-}
-
-#graph_employees {
-    height: 500px; 
-    width: 530px;
-}
-
-
-#entities_location {
-    height: 400;
-    width: 700;
-}
-
-#text_map {
-    margin-left: auto;
-    margin-right: auto;
-    width: 700px;
-    color : lightslategrey;
-    font-weight: bold;
-}
-
-
-#graph_provinces {
-    width: 700px;
-    margin-right: auto;
-    margin-left: auto;
-
-}
