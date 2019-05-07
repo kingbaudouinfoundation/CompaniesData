@@ -20,6 +20,27 @@ DICT_REGIONS = {
         'Flandre' : ['Brabant Flamand', 'Anvers', 'Limbourg', 'Flandre-Occidentale', 'Flandre-Orientale']
 }
 
+def build_filters(frame):
+    get_regions = frame[['EntityNumber','Regions']].groupby('Regions').size().to_frame('count')
+    list_regions = get_regions.index.tolist()
+    filters_regions = []
+    for r in list_regions:
+        filters_regions.append({'label': r, 'value': r})
+    
+    get_employees = frame[['EntityNumber','employees']].groupby('employees').size().to_frame('count')
+    list_employees = get_employees.index.tolist()
+    filters_employees = []
+    for e in list_employees:
+        filters_employees.append({'label': e, 'value': e})
+    
+    get_JF = frame[['EntityNumber','Description']].groupby('Description').size().to_frame('count')
+    list_JF = get_JF.index.tolist()
+    filters_JF = []
+    for jf in list_JF:
+        filters_JF.append({'label': jf, 'value': jf})
+    
+    return filters_regions, filters_employees, filters_JF
+
 
 def create_dataframe(name, contents):
     content_type, content_string = contents.split(',')
