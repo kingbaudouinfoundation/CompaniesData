@@ -14,12 +14,12 @@ import io
 import csv 
 import sqlite3
 
-from functions import parse_contents, create_dataframe
+from functions import build_filters, parse_contents, create_dataframe
 from charts import create_chart_JF, create_chart_age, create_chart_starting_date, create_chart_employees, create_chart_mapbox, create_chart_province
 
 mapbox_access_token = 'pk.eyJ1IjoidGhvbWFzdnJvIiwiYSI6ImNqdWI5Y2JxdjBhYW40NnBpa2RhcHBnb3kifQ.9N4rhGAGmo9zqnXOlt-WOw'
 
-DEFAULT_COLOURS_1 = ['maroon', 'coral', 'darktruquoise', 'chocolate', 'palegoldenrod', 'lightblue']
+DEFAULT_COLOURS_1 = ['darkblue', 'cornflowerblue', 'darktruquoise', 'lightskyblue', 'steelblue', 'lightblue']
 DEFAULT_COLOURS_2 = ['firebrick', 'lightcoral', 'tomato']
 DEFAULT_COLOURS_3 = ['darkred', 'indianred', 'lemonchiffon', 'lightsalmon', 'orange', 'mediumorchid']
 
@@ -27,6 +27,9 @@ LABELS = ['EntityNumber', 'JuridicalForm', 'StartDate', 'Zipcode', 'Municipality
 
 global dframe
 dframe = pd.DataFrame(columns = LABELS)
+
+global filters_regions, filters_employees, filters_JF
+filters_regions, filters_employees, filters_JF = build_filters(dframe)
 
 DEFAULT_LAYOUT = go.Layout(
     xaxis = go.layout.XAxis(
@@ -87,12 +90,8 @@ app.layout = html.Div([
                         dcc.Dropdown(
                             id = 'regions',
                             style = {'width':'250px', 'backgroundColor':'white', 'marginLeft':'20px'},
-                            options=[
-                                {'label': 'Flandre', 'value': 'Flandre'},
-                                {'label': 'Wallonie', 'value': 'Wallonie'},
-                                {'label': 'Bruxelles', 'value': 'Bruxelles'}
-                                
-                            ],
+                            options = filters_regions,
+                            placeholder="All",
                             multi = 'True'
                         ),
 
@@ -100,17 +99,16 @@ app.layout = html.Div([
                         dcc.Dropdown(
                             id = 'employees',
                             style = {'width':'250px', 'backgroundColor':'white', 'marginLeft':'20px'},
-                            options = [
-                                {'label':'1 to 5', 'value':'1 to 5'},
-                                {'label':'5 to 10', 'value':'5 to 10'},
-                                {'label':'10 to 20', 'value': '10 to 20'},
-                                {'label':'20 to 50', 'value': '20 to 50'},
-                                {'label':'50 to 100', 'value': '50 to 100'},
-                                {'label':'100 to 500', 'value': '100 to 500'},
-                                {'label':'500 to 1000', 'value': '500 to 1000'},
-                                {'label':'More than 1000', 'value': 'More than 1000'}
-                                
-                            ],
+                            options = filters_employees,
+                            placeholder="All",
+                            multi = 'True'
+                        ),
+                        html.P('Juridical Forms:', style = {'color':'sandybrown','marginLeft':'20px','fontWeight':'bold'}),
+                        dcc.Dropdown(
+                            id = 'jf',
+                            style = {'width':'250px', 'backgroundColor':'white', 'marginLeft':'20px'},
+                            options = filters_JF,
+                            placeholder="All",
                             multi = 'True'
                         )
 
@@ -124,7 +122,7 @@ app.layout = html.Div([
 
         html.Div(' ', style = {'backgroundColor':'lightgrey', 'height':'50px'}),
         html.Div('Upload a dataset and see your results below', style = {'color':'mediumvioletred','fontSize':'130%','marginTop':'40px', 'fontWeight':'bold'}),
-        html.Div(id='output-data-upload'),
+        html.Div(id='space'),
         html.Div(
             id = 'graph1_container',
             children = [
@@ -195,6 +193,8 @@ def filter_df(frame, filters={}):
         frame = frame[frame['Regions'].isin(filters.get('regions'))]
     if 'employees' in filters and filters['employees'] is not None and len(filters['employees']) > 0:
         frame = frame[frame['employees'].isin(filters.get('employees'))]
+    if 'jf' in filters and filters['jf'] is not None and len(filters['jf']) > 0:
+        frame = frame[frame['Description'].isin(filters.get('jf'))]
     
     return frame
 
@@ -205,7 +205,10 @@ def filter_df(frame, filters={}):
     Output('graph3_container', 'children'),
     Output('graph4_container', 'children'),
     Output('graph5_container', 'children'),
-    Output('graph6_container', 'children')
+    Output('graph6_container', 'children'),
+    Output('regions', 'options'),
+    Output('employees', 'options'),
+    Output('jf', 'options')
     ],
     [Input('upload-data', 'contents')],
     [State('upload-data', 'filename'),
@@ -220,6 +223,9 @@ def update_output(list_of_contents, list_of_names, list_of_dates):
             datas = r
         global dframe
         dframe = pd.DataFrame(datas, columns = LABELS)
+
+        global filters_regions, filters_employees, filters_JF
+        filters_regions, filters_employees, filters_JF = build_filters(dframe)
 
         return [
                 dcc.Graph(
@@ -251,7 +257,7 @@ def update_output(list_of_contents, list_of_names, list_of_dates):
                     id = 'graph6',
                     figure = create_chart_province(dframe.copy())
                 )
-            ]
+            ], filters_regions, filters_employees, filters_JF
 
 
 @app.callback(
@@ -264,14 +270,14 @@ def update_output(list_of_contents, list_of_names, list_of_dates):
     ],
     [Input('regions', 'value'),
      Input('employees', 'value'),
-     #Input('juridicalForm', 'value')
+     Input('jf', 'value')
      ])
-def update_graph(regions, employees):
+def update_graph(regions, employees, jf):
     
     filters = {
         'regions': regions,
         'employees': employees,
-        #'jf': juridicalForm
+        'jf': jf
     }
 
     filtered_df = filter_df(dframe.copy(), filters)
