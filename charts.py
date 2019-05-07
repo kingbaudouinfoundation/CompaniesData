@@ -36,7 +36,7 @@ DEFAULT_LAYOUT = go.Layout(
             )
 
 
-DEFAULT_COLOURS_1 = ['maroon', 'coral', 'darktruquoise', 'chocolate', 'palegoldenrod', 'lightblue']
+DEFAULT_COLOURS_1 = ['darkblue', 'cornflowerblue', 'darktruquoise', 'lightskyblue', 'steelblue', 'lightblue']
 DEFAULT_COLOURS_2 = ['firebrick', 'lightcoral', 'tomato']
 DEFAULT_COLOURS_3 = ['darkred', 'indianred', 'lemonchiffon', 'lightsalmon', 'orange', 'mediumorchid']
 
