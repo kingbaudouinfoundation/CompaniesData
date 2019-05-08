@@ -14,14 +14,10 @@ import io
 import csv 
 import sqlite3
 
-from functions import build_filters, parse_contents, create_dataframe
+from functions import get_info, build_filters, parse_contents, create_dataframe
 from charts import create_chart_JF, create_chart_age, create_chart_starting_date, create_chart_employees, create_chart_mapbox, create_chart_province
 
 mapbox_access_token = 'pk.eyJ1IjoidGhvbWFzdnJvIiwiYSI6ImNqdWI5Y2JxdjBhYW40NnBpa2RhcHBnb3kifQ.9N4rhGAGmo9zqnXOlt-WOw'
-
-DEFAULT_COLOURS_1 = ['darkblue', 'cornflowerblue', 'darktruquoise', 'lightskyblue', 'steelblue', 'lightblue']
-DEFAULT_COLOURS_2 = ['firebrick', 'lightcoral', 'tomato']
-DEFAULT_COLOURS_3 = ['darkred', 'indianred', 'lemonchiffon', 'lightsalmon', 'orange', 'mediumorchid']
 
 LABELS = ['EntityNumber', 'JuridicalForm', 'StartDate', 'Zipcode', 'MunicipalityFR', 'Description', 'employees','latitude', 'longitude', 'province', 'Regions', 'Denomination']
 
@@ -30,6 +26,10 @@ dframe = pd.DataFrame(columns = LABELS)
 
 global filters_regions, filters_employees, filters_JF
 filters_regions, filters_employees, filters_JF = build_filters(dframe)
+
+global entities
+entities = get_info(dframe)
+
 
 DEFAULT_LAYOUT = go.Layout(
     xaxis = go.layout.XAxis(
@@ -122,7 +122,7 @@ app.layout = html.Div([
 
         html.Div(' ', style = {'backgroundColor':'lightgrey', 'height':'50px'}),
         html.Div('Upload a dataset and see your results below', style = {'color':'mediumvioletred','fontSize':'130%','marginTop':'40px', 'fontWeight':'bold'}),
-        html.Div(id='space'),
+        html.Div(id = 'dataset-info'),
         html.Div(
             id = 'graph1_container',
             children = [
@@ -208,7 +208,8 @@ def filter_df(frame, filters={}):
     Output('graph6_container', 'children'),
     Output('regions', 'options'),
     Output('employees', 'options'),
-    Output('jf', 'options')
+    Output('jf', 'options'),
+    Output('dataset-info', 'children')
     ],
     [Input('upload-data', 'contents')],
     [State('upload-data', 'filename'),
@@ -257,7 +258,7 @@ def update_output(list_of_contents, list_of_names, list_of_dates):
                     id = 'graph6',
                     figure = create_chart_province(dframe.copy())
                 )
-            ], filters_regions, filters_employees, filters_JF
+            ], filters_regions, filters_employees, filters_JF, get_info(dframe.copy())
 
 
 @app.callback(
@@ -266,7 +267,8 @@ def update_output(list_of_contents, list_of_names, list_of_dates):
     Output('graph3', 'figure'),
     Output('graph4', 'figure'),
     Output('graph5', 'figure'),
-    Output('graph6', 'figure')
+    Output('graph6', 'figure'),
+    #Output('dataset-info', 'children')
     ],
     [Input('regions', 'value'),
      Input('employees', 'value'),
@@ -282,7 +284,7 @@ def update_graph(regions, employees, jf):
 
     filtered_df = filter_df(dframe.copy(), filters)
 
-    return  create_chart_JF(filtered_df), create_chart_age(filtered_df), create_chart_starting_date(filtered_df), create_chart_employees(filtered_df), create_chart_mapbox(filtered_df), create_chart_province(filtered_df)
+    return  create_chart_JF(filtered_df), create_chart_age(filtered_df), create_chart_starting_date(filtered_df), create_chart_employees(filtered_df), create_chart_mapbox(filtered_df), create_chart_province(filtered_df)#, get_info(filtered_df)
 
 
 if __name__ == '__main__':
