@@ -20,6 +20,59 @@ DICT_REGIONS = {
         'Flandre' : ['Brabant Flamand', 'Anvers', 'Limbourg', 'Flandre-Occidentale', 'Flandre-Orientale']
 }
 
+def get_info(frame):
+    entities = str(len(frame))
+    dates = [int(d.split('-')[2]) for d in frame.loc[: , 'StartDate']]
+    employees = [e for e in frame.loc[: , 'employees']]
+    
+    inf = 0
+    c = 0
+    for e in employees:
+        x = e.split(' to ')
+        if len(x) > 1:
+            i = int(x[0])
+            j = int(x[1])
+            inf = inf + i
+        else:
+            inf = inf + 1000
+    
+    if len(frame) == 0:
+        return html.Div('')
+    
+    if frame is not None:
+        this_year = datetime.datetime.now()
+        current_year = int(this_year.year)
+        s = (sum(dates))
+        x = s / len(dates)
+        avg_age = round(current_year - x)
+        return html.Div([
+                    html.Div('We found', style = {'marginTop':'50px','fontSize':'140%', 'color':'darkgray','fontWeight':'bold'}),
+                    html.Br(),
+                    html.Div([
+                        html.Span([
+                            html.Br(),
+                            html.Br(),
+                            html.Div(entities, style = {'fontSize':'350%'}),
+                            html.Div('entities'), 
+                        ],style = {'height':'150px', 'width':'150px','display':'inline-block','color':'white','backgroundColor':'lightskyblue','borderRadius':'50%'}),
+                        html.Span([
+                            html.Br(),
+                            html.Br(),
+                            html.Div(str(avg_age), style = {'fontSize':'350%'}),
+                            html.Div('y.o middle-aged'), 
+                        ],style = {'height':'150px', 'width':'150px','display':'inline-block','color':'white','backgroundColor':'goldenrod','borderRadius':'50%'}),
+                        html.Span([
+                            html.Br(),
+                            html.Br(),
+                            html.Div('over'),
+                            html.Div(str(inf), style = {'fontSize':'250%'}),
+                            html.Div('employees')
+                        ],style = {'height':'150px', 'width':'150px','display':'inline-block','color':'white','backgroundColor':'purple','borderRadius':'50%'}),
+                    ], style = {'textAlign':'center'}),
+                    
+                ], style = {'textAlign':'center', 'alignItems':'center', 'justifyContent':'center'})
+
+
 def build_filters(frame):
     get_regions = frame[['EntityNumber','Regions']].groupby('Regions').size().to_frame('count')
     list_regions = get_regions.index.tolist()
@@ -214,8 +267,7 @@ def parse_contents(contents, filename, date):
     #On récupère les numéros présents dans le csv 
     numeros = []
     numeros = df['Ondernemingsnummer'].values
-    df.rename(columns = {'Naam':'Name'}, inplace = True)
-    #df.rename(columns = {'Ondernemingsnummer':'Entity Number'}, inplace = True)
+    #df.rename(columns = {'Naam':'Name'}, inplace = True)
 
     #On formate les numéros sous la forme 0xxx . xxx . xxx 
     format_numbers = ['0' + '.'.join(n.split()) for n in numeros if len(n) == 11]
@@ -247,7 +299,6 @@ def parse_contents(contents, filename, date):
     tab_emp = format_employees(merge.loc[: , "Employees"])
     prop_empl, list_emp = get_datas_employees(tab_emp)
     merge['employees'] = list_emp
-    #prop_empl, tab_emp = build_data_employees(merge.loc[: , "Employees"])
     merge.drop('Employees', axis = 1, inplace = True)
 
     
@@ -268,186 +319,5 @@ def parse_contents(contents, filename, date):
     
     merge['Regions'] = list_regions
     merge['Denomination'] = new_merge.loc[: , 'Denomination']
-    '''
-    return html.Div([
-
-            html.Div([
-                html.P('We found ' + str(len(df.loc[: , "Name"]))+ ' entities in which ' + str(len(format_numbers))+ ' have a correct number')
-
-            ], id = "div_count_entities"),
-
-            html.Div([
-                dash_table.DataTable(
-                    id = 'table',
-                    columns = [{"name": i, "id": i} for i in merge.columns],
-                    style_table = { 'overflowX':'scroll','overflowY': 'scroll','maxHeight':'200'},
-                    data = merge.to_dict("rows"),
-                    style_as_list_view = True,
-                    style_cell={'padding': '5px',
-                                'maxWidth': 0,
-                                'height': 30,
-                                'textAlign': 'center'},
-                    style_header={
-                        'backgroundColor': 'darkgray',
-                        'fontWeight': 'bold',
-                        'color': 'white'
-                    },
-                    n_fixed_rows = 1,
-
-                ),
-
-
-            ], id = 'div_table', style = {'margin-top': '35','border': '1px solid #C6CCD5','paddingLeft':'90', 'paddingRight':'90', 'paddingBottom':'20'}),
-            
-            
-            html.Div([
-
-                 html.Div([
-                    dcc.Graph(
-                        id = "graph1",
-                        figure = {  
-                        'data': [create_chart_JF(merge)],
-                        'layout': DEFAULT_LAYOUT_BAR
-                        }
-                    ),
-                    #html.Div('Based on ' + str(len(merge.loc[:, "Description"])) + ' entities'),
-
-
-                ], id = "div_pie_form"),
-
-            
-                
-                html.Div([
-                    dcc.Graph(
-                    id = "pie_chart_ages",
-                    figure = {
-                        'data': [
-                            go.Pie(
-                                labels = size,
-                                values = part,
-                                hole = .5,
-                                marker = {
-                                    'colors': DEFAULT_COLOURS_1
-                                }
-                            )
-                        ],
-                        'layout': {
-                            'title': 'Enterprises age (Based on ' + str(len(year)) + ' entities)'
-                        }
-                    }
-                ),
-
-                ], id = "div_pie_ages"),
-                
-               
-                
-            ], id = 'first_row'),
-
-            html.Div([
-
-                html.Div([
-                    dcc.Graph(
-                        id = "starting_dates",
-                        figure = {
-                            'data': [
-                                go.Bar(
-                                    x = x,
-                                    y = year_prop,
-                                    marker = {
-                                        'color':'goldenrod'
-                                    }
-                                )
-                            ],
-                            'layout': {
-                                'title': 'Starting Dates Histogram (Based on ' + str(count_date) + ' entities)',
-                                'xaxis':{
-                                    'title':'year',
-                                    'tickmode':'auto',
-                                    'tickandle':'80'
-                                },
-                                'yaxis':{
-                                    'title':'Number of enterprises'
-                                }
-                            }
-                        }
-                    ), 
-                ], id = "div_bar_dates"),
-
-                
-            ], id = "second_row"),
-
-            html.Div([
-
-                    dcc.Graph(
-                        id = "graph_employees",
-                        figure = {  
-                        'data': [    
-                            go.Pie(
-                                    labels = empl,
-                                    values = prop_empl,
-                                    hole = 0,
-                                    marker = {
-                                        'colors': DEFAULT_COLOURS_3
-                                    }
-                                )
-                            ],
-                            'layout': {
-                                'title':'Number of employees per entity (Based on ' + str(count_empl)+ ' entities)',
-                            }  
-                        }
-                    ),
-                ], id = "div_pie_empl"),
-
-            html.Div([
-                dcc.Graph(
-                    id = "entities_location",
-                    figure = {
-                        'data': [
-                            go.Scattermapbox(
-                                lat = list_lat,
-                                lon = list_long,
-                                mode = 'markers',
-                                marker=go.scattermapbox.Marker(
-                                    size=9
-                                ),
-                                text = list_name,
-                                hoverinfo = 'text'
-                            )
-                        ],
-                        'layout': LAYOUT_MAPBOX  
-                    }
-                )
-            ], id = "div_map"),
-
-            html.Div([
-                html.P('This plot was made using the latitudes and longitudes of the postcodes given in the database. Some entities did not match with any cities and may have been located with an average position (based on ' + str(len(list_lat)) + ' entities).')
-            ], id = "text_map"),
-
-           
-                dcc.Graph(
-                    id = 'graph_provinces',
-                    figure = {
-                        'data': [
-                            go.Bar (
-                                x = y_province,
-                                y = x_province,
-                                orientation = 'h',
-                                marker = {
-                                        'color':'purple'
-                                    }
-                            ) 
-                        ],
-                        'layout' : LAYOUT_BAR_CHART_H
-                          
-                        
-                    }
-                )
-        
-
-
-    ], id = "results")
-
-    ])
-    '''
-
+    
     return merge.values.tolist()
