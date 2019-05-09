@@ -36,9 +36,9 @@ DEFAULT_LAYOUT = go.Layout(
             )
 
 
-DEFAULT_COLOURS_1 = ['darkblue', 'cornflowerblue', 'darktruquoise', 'lightskyblue', 'steelblue', 'lightblue']
-DEFAULT_COLOURS_2 = ['firebrick', 'lightcoral', 'tomato']
-DEFAULT_COLOURS_3 = ['darkred', 'indianred', 'lemonchiffon', 'lightsalmon', 'orange', 'mediumorchid']
+DEFAULT_COLOURS_1 = ['darkblue', 'cornflowerblue', 'darkturquoise', 'lightskyblue', 'steelblue', 'lightblue']
+DEFAULT_COLOURS_2 = ['darkred', 'indianred', 'firebrick',  'lightcoral', 'tomato','lightsalmon', 'orange','darkorange','coral','crimson','orangered','darksalmon','brown','chocolate','moccasin','peru']
+DEFAULT_COLOURS_3 = ['darkgreen', 'green', 'seagreen', 'forestgreen', 'yellowgreen', 'lightgreen', 'chartreuse', 'lime']
 
 def create_chart_JF(frame):
 
@@ -73,11 +73,18 @@ def create_chart_JF(frame):
                 )
             ],
             'layout' : go.Layout(
+                margin = go.layout.Margin(
+                           b = 250
+                    ),
                 title = 'Distribution by juridical forms - based on ' + str(len(frame)) + ' entities',
                 xaxis = go.layout.XAxis(
                     showgrid = False,
                     showline = False,
                     zeroline = False,
+                    tickangle = 60,
+                    tickfont = dict(
+                        size = 8,
+                    ),
                 ),
                 yaxis = go.layout.YAxis(
                     showgrid = False,
@@ -97,12 +104,11 @@ def create_chart_age(frame):
     if len(frame) == 0:
         return {
             'data': [
-                go.Pie(
-                    labels = xaxis,
-                    values = datas,
-                    hole = .5,
+                go.Bar(
+                    x = xaxis,
+                    y = datas,
                     marker = {
-                        'colors': DEFAULT_COLOURS_1
+                        'color': DEFAULT_COLOURS_1  
                     },
                     visible = False
                 )
@@ -114,14 +120,12 @@ def create_chart_age(frame):
     if frame is not None:
         return {
             'data': [
-                go.Pie(
-                    labels = xaxis,
-                    values = datas,
-                    hole = .5,
+                go.Bar(
+                    x = xaxis,
+                    y = datas,
                     marker = {
-                        'colors': DEFAULT_COLOURS_1
+                        'color': DEFAULT_COLOURS_1  
                     },
-                    rotation = 100
                 )
             ],
             'layout' : go.Layout(
@@ -130,7 +134,6 @@ def create_chart_age(frame):
                     showgrid = False,
                     showline = False,
                     zeroline = False,
-                    showticklabels=False
                 ),
                 yaxis = go.layout.YAxis(
                     showgrid = False,
@@ -192,15 +195,14 @@ def create_chart_employees(frame):
     datas, list_emp = get_datas_employees(frame.loc[: , "employees"])
     if len(frame) == 0:
         return {
-            'data' : [
-                go.Pie(
-                    labels = xaxis,
-                    values = datas,
-                    hole = 0,
-                    marker = {                    
-                        'colors': DEFAULT_COLOURS_3
+            'data': [
+                go.Bar(
+                    x = xaxis,
+                    y = datas,
+                    marker = {
+                        'color': DEFAULT_COLOURS_3    
                     },
-                    visible = False,
+                    visible = False
                 )
             ],
             'layout' : DEFAULT_LAYOUT
@@ -208,15 +210,13 @@ def create_chart_employees(frame):
         
     if frame is not None:
         return {
-            'data' : [
-                go.Pie(
-                    labels = xaxis,
-                    values = datas,
-                    hole = 0,
-                    marker = {                    
-                        'colors': DEFAULT_COLOURS_3
+            'data': [
+                go.Bar(
+                    x = xaxis,
+                    y = datas,
+                    marker = {
+                        'color': DEFAULT_COLOURS_3    
                     },
-                    rotation = 100
                 )
             ],
             'layout' : go.Layout(
@@ -225,7 +225,6 @@ def create_chart_employees(frame):
                     showgrid = False,
                     showline = False,
                     zeroline = False,
-                    showticklabels=False
                 ),
                 yaxis = go.layout.YAxis(
                     showgrid = False,
