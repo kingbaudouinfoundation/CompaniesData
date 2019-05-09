@@ -20,6 +20,12 @@ DICT_REGIONS = {
         'Flandre' : ['Brabant Flamand', 'Anvers', 'Limbourg', 'Flandre-Occidentale', 'Flandre-Orientale']
 }
 
+
+#
+# get_info : takes a dataframe and returns an Html component to display the frame's information 
+#
+# Params:
+# @frame : frame created from the csv file
 def get_info(frame):
     entities = str(len(frame))
     dates = [int(d.split('-')[2]) for d in frame.loc[: , 'StartDate']]
@@ -72,7 +78,12 @@ def get_info(frame):
                     
                 ], style = {'textAlign':'center', 'alignItems':'center', 'justifyContent':'center'})
 
-
+#
+# build_filters : takes a dataframe and changes the filters value in function of the dataframe
+#                 returns 3 lists containing the right values 
+#
+# Params:
+# @frame : the dataframe with which the filters value are created
 def build_filters(frame):
     get_regions = frame[['EntityNumber','Regions']].groupby('Regions').size().to_frame('count')
     list_regions = get_regions.index.tolist()
@@ -94,7 +105,12 @@ def build_filters(frame):
     
     return filters_regions, filters_employees, filters_JF
 
-
+#
+# create_dataframe : takes a name and a value to convert a csv file to a dataframe
+#
+# Params:
+# @name: the csv file's name
+# @content: the content of the csv file
 def create_dataframe(name, contents):
     content_type, content_string = contents.split(',')
     decoded = base64.b64decode(content_string)
@@ -112,6 +128,12 @@ def create_dataframe(name, contents):
             'There was an error processing this file.'
         ])
 
+#
+# get_datas_starting_dates : takes a list 
+#                            returns two lists (x and year_prop) to build the chart of entities starting dates
+#
+# Params:
+# @tab: the list containing all the starting dates in the dataframe
 def get_datas_starting_date(tab):
     x = []
     year = []
@@ -123,6 +145,12 @@ def get_datas_starting_date(tab):
 
     return x, year_prop
 
+#
+# get_datas_entities_age : takes a list
+#                          returns a list (part) which contains every proportion of each slice of age
+#
+# Params:
+# @tab : the list containing the starting dates of the entities
 def get_datas_entities_age(tab):
     this_year = datetime.datetime.now()
     current_year = int(this_year.year)
@@ -150,6 +178,11 @@ def get_datas_entities_age(tab):
 
     return part
 
+#
+# format_employees : takes a list, returns a new list. Format the employees column from ' x &agrave x ' to ' x to x '
+#
+# Params:
+# @tab : the list containing the values of employees
 def format_employees(tab):
     tab_emp = []
     for e in tab:
@@ -163,7 +196,11 @@ def format_employees(tab):
     
     return tab_emp
     
-
+#
+# get_datas_employees : takes a list, returns two list (prop_emp, list_emp) to create the chart of employees number
+#                       
+# Params:
+# @tab: the list containing the values of employees
 def get_datas_employees(tab):
 
     P1 = P2 = P3 = P4 = P5 = P6 = P7 = P8 = 0
@@ -232,7 +269,6 @@ def build_data_geolocation(tab, frame, num):
             prov = ''
             entity_name = ''
             for r in rows: 
-                #print(r[10])
                 if list_province.count(r[10]) == 0 and r[10] is not None:
                     p = [r[10], 0]
                     list_prop_province.append(p)
@@ -260,11 +296,6 @@ def build_data_geolocation(tab, frame, num):
                 if line[10] == i[0]:
                     i[1] = i[1] + 1
                     provinces.append(line[10])
-    
-        #else:
-        #    list_lat.append(0.0)
-        #    list_long.append(0.0)
-        #    list_province.append('Unkwown')
                 
     for i in list_prop_province:
         x_province.append(i[0])
@@ -274,50 +305,98 @@ def build_data_geolocation(tab, frame, num):
 
 def parse_contents(contents, filename, date):
 
+    timer1 = datetime.datetime.now()
     df = create_dataframe(filename, contents)
+    timer2 = datetime.datetime.now()
 
-    #On récupère les numéros présents dans le csv 
+    marker1 = timer2 - timer1
+    print(" ")
+    print("Dataframe parsing: ")
+    print("begin at: " + str(timer1))
+    print("ends at: " + str(timer2))
+    print("duration: " + str(marker1))
+    print(" ")
+
+
     numeros = []
     numeros = df['Ondernemingsnummer'].values
-    #df.rename(columns = {'Naam':'Name'}, inplace = True)
 
-    #On formate les numéros sous la forme 0xxx . xxx . xxx 
     format_numbers = ['0' + '.'.join(n.split()) for n in numeros if len(n) == 11]
     
-    ### Connexion à la base de donnée SQLite
     connection = sqlite3.connect('kbo.sqlite3')
     statement = connection.cursor()
 
+    
+    timer3 = datetime.datetime.now()
     query = 'SELECT EntityNumber, JuridicalForm, StartDate, Zipcode, MunicipalityFR, Employees FROM enterprise_addresses WHERE EntityNumber in' + str(tuple(format_numbers)) + 'AND Zipcode IS NOT NULL AND MunicipalityFR IS NOT NULL'
     frame = pd.read_sql_query(query, connection)
+    timer4 = datetime.datetime.now()
 
+    marker2 = timer4 - timer3
+    print(" ")
+    print("fetchind datas with DB: ")
+    print("begin at: " + str(timer3))
+    print("ends at: " + str(timer4))
+    print("duration: " + str(marker2))
+    print(" ")
+
+    
+    timer5 = datetime.datetime.now()
     query = 'SELECT Code, Description from code where Language="FR" and Category="JuridicalForm"'
     codes = pd.read_sql_query(query, connection).rename(columns={'Code': 'JuridicalForm'})
     codes['JuridicalForm'] = codes['JuridicalForm'].astype(float)
 
     merge = pd.merge(frame, codes, on='JuridicalForm')
+    timer6 = datetime.datetime.now()
+
+    marker3 = timer6 - timer5
+    print(" ")
+    print("merging with dataframe code: ")
+    print("begin at: " + str(timer5))
+    print("ends at: " + str(timer6))
+    print("duration: " + str(marker3))
+    print(" ")
 
 
+    timer7 = datetime.datetime.now()
     query = 'SELECT postcode, city, lat, long, province FROM postcode_geo'
     geo = pd.read_sql_query(query, connection).rename(columns = {'postcode':'Zipcode'})
     geo['Zipcode'] = geo['Zipcode'].astype(str)
 
     new_merge = pd.merge(merge, geo, on = 'Zipcode')
+    timer8 = datetime.datetime.now()
 
-    
-    query = 'SELECT EntityNumber, Denomination FROM denomination WHERE TypeOfDenomination = "001"'
+    marker4 = timer8 - timer7
+    print(" ")
+    print("merging with dataframe postcode_geo: ")
+    print("begin at: " + str(timer7))
+    print("ends at: " + str(timer8))
+    print("duration: " + str(marker4))
+    print(" ")
+
+    timer9 = datetime.datetime.now()
+    query = 'SELECT EntityNumber, Denomination FROM denomination WHERE EntityNumber in' + str(tuple(format_numbers)) + 'AND TypeOfDenomination = "001"'
     names = pd.read_sql_query(query, connection)
+    timer10 = datetime.datetime.now()
 
     connection.close()
 
     new_merge = pd.merge(new_merge, names, on = 'EntityNumber')
+    
+    marker5 = timer10 - timer9
+    print(" ")
+    print("merging with dataframe denomination: ")
+    print("begin at: " + str(timer9))
+    print("ends at: " + str(timer10))
+    print("duration: " + str(marker5))
+    print(" ")
 
+    timer11 = datetime.datetime.now()
     tab_emp = format_employees(merge.loc[: , "Employees"])
     prop_empl, list_emp = get_datas_employees(tab_emp)
     merge['employees'] = list_emp
     merge.drop('Employees', axis = 1, inplace = True)
 
-    #Geolocalisation et répartition par province
     list_lat, list_long, list_name, x_province, y_province, provinces = build_data_geolocation(new_merge['EntityNumber'], new_merge, merge.loc[: , 'EntityNumber'])
     merge['latitude'] = list_lat
     merge['longitude'] = list_long
@@ -334,5 +413,16 @@ def parse_contents(contents, filename, date):
     
     merge['Regions'] = list_regions
     merge['Denomination'] = new_merge.loc[: , 'Denomination']
+    timer12 = datetime.datetime.now()
+
+    marker6 = timer12 - timer11
+    print(" ")
+    print("Removing useless rows in dataframe: ")
+    print("begin at: " + str(timer11))
+    print("ends at: " + str(timer12))
+    print("duration: " + str(marker6))
+    print(" ")
+
+
     
     return merge.values.tolist()
