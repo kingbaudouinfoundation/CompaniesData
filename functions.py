@@ -33,7 +33,7 @@ def get_info(frame):
             i = int(x[0])
             j = int(x[1])
             inf = inf + i
-        else:
+        if len(x) == 0 and x is not None:
             inf = inf + 1000
     
     if len(frame) == 0:
@@ -158,6 +158,8 @@ def format_employees(tab):
             e = e.split(' &agrave; ')
             e = ' to '.join(e)
             tab_emp.append(str(e))
+        else:
+            tab_emp.append('Unkwown')
     
     return tab_emp
     
@@ -169,6 +171,8 @@ def get_datas_employees(tab):
     prop_empl = []
     for row in tab:
         x = row.split(' to ')
+        if x is None:
+            list_emp.append('Unkwown')
         if len(x) > 1:
             diff = int(x[1]) - int(x[0])
             if diff <= 5:
@@ -221,16 +225,19 @@ def build_data_geolocation(tab, frame, num):
     for n in num:
         temp = frame.loc[tab == n]
         rows = temp.values.tolist()
-        if len(rows) > 0:
-            match = latitue = longitude = avg_lat = avg_long = 0
+        if len(rows) == 0:
+            print(n)
+        if len(rows) > 0 and len(rows) is not None:
+            match = latitude = longitude = avg_lat = avg_long = 0
             prov = ''
             entity_name = ''
             for r in rows: 
-                if list_province.count(r[10]) == 0:
+                #print(r[10])
+                if list_province.count(r[10]) == 0 and r[10] is not None:
                     p = [r[10], 0]
                     list_prop_province.append(p)
                     list_province.append(r[10])
-                elif r[4] == r[7]:
+                if r[4] == r[7]:
                     latitude = r[8]
                     longitude = r[9]
                     entity_name = r[11]
@@ -254,6 +261,11 @@ def build_data_geolocation(tab, frame, num):
                     i[1] = i[1] + 1
                     provinces.append(line[10])
     
+        #else:
+        #    list_lat.append(0.0)
+        #    list_long.append(0.0)
+        #    list_province.append('Unkwown')
+                
     for i in list_prop_province:
         x_province.append(i[0])
         y_province.append(i[1])
@@ -271,12 +283,12 @@ def parse_contents(contents, filename, date):
 
     #On formate les numéros sous la forme 0xxx . xxx . xxx 
     format_numbers = ['0' + '.'.join(n.split()) for n in numeros if len(n) == 11]
-        
+    
     ### Connexion à la base de donnée SQLite
     connection = sqlite3.connect('kbo.sqlite3')
     statement = connection.cursor()
 
-    query = 'SELECT EntityNumber, JuridicalForm, StartDate, Zipcode, MunicipalityFR, Employees FROM enterprise_addresses WHERE EntityNumber in' + str(tuple(format_numbers))
+    query = 'SELECT EntityNumber, JuridicalForm, StartDate, Zipcode, MunicipalityFR, Employees FROM enterprise_addresses WHERE EntityNumber in' + str(tuple(format_numbers)) + 'AND Zipcode IS NOT NULL AND MunicipalityFR IS NOT NULL'
     frame = pd.read_sql_query(query, connection)
 
     query = 'SELECT Code, Description from code where Language="FR" and Category="JuridicalForm"'
@@ -285,14 +297,18 @@ def parse_contents(contents, filename, date):
 
     merge = pd.merge(frame, codes, on='JuridicalForm')
 
+
     query = 'SELECT postcode, city, lat, long, province FROM postcode_geo'
     geo = pd.read_sql_query(query, connection).rename(columns = {'postcode':'Zipcode'})
     geo['Zipcode'] = geo['Zipcode'].astype(str)
 
     new_merge = pd.merge(merge, geo, on = 'Zipcode')
 
+    
     query = 'SELECT EntityNumber, Denomination FROM denomination WHERE TypeOfDenomination = "001"'
     names = pd.read_sql_query(query, connection)
+
+    connection.close()
 
     new_merge = pd.merge(new_merge, names, on = 'EntityNumber')
 
@@ -301,9 +317,8 @@ def parse_contents(contents, filename, date):
     merge['employees'] = list_emp
     merge.drop('Employees', axis = 1, inplace = True)
 
-    
     #Geolocalisation et répartition par province
-    list_lat, list_long, list_name, x_province, y_province, provinces = build_data_geolocation(new_merge['EntityNumber'], new_merge, format_numbers)
+    list_lat, list_long, list_name, x_province, y_province, provinces = build_data_geolocation(new_merge['EntityNumber'], new_merge, merge.loc[: , 'EntityNumber'])
     merge['latitude'] = list_lat
     merge['longitude'] = list_long
     merge['province'] = provinces
