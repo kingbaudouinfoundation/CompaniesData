@@ -42,16 +42,12 @@ DEFAULT_COLOURS_3 = ['darkgreen', 'green', 'seagreen', 'forestgreen', 'yellowgre
 
 def create_chart_JF(frame):
 
-    descriptionsF = frame[['EntityNumber','Description']].groupby('Description').size().to_frame('count')
-    descriptions = descriptionsF.index.tolist()
-    descriptions_prop = descriptionsF.loc[: , 'count']
-
-    if len(frame) == 0:
+    if frame is None or len(frame) == 0:
         return {
             'data': [
                 go.Bar(
-                    x = descriptions,
-                    y = descriptions_prop,
+                    x = [],
+                    y = [],
                     marker = {
                         'color': DEFAULT_COLOURS_2     
                     },
@@ -60,8 +56,10 @@ def create_chart_JF(frame):
             ],
             'layout' : DEFAULT_LAYOUT
         }
-    
-    if frame is not None:
+    else:
+        descriptionsF = frame[['EntityNumber','Description']].groupby('Description').size().to_frame('count')
+        descriptions = descriptionsF.index.tolist()
+        descriptions_prop = descriptionsF.loc[: , 'count']
         return {
             'data': [
                 go.Bar(
@@ -95,15 +93,13 @@ def create_chart_JF(frame):
 
 def create_chart_age(frame):
     xaxis = ['1 to 5 year', '5 to 10 year', '10 to 15 year', '15 to 20 year', 'More than 20 year']
-    year = [d.split('-')[2] for d in frame.loc[: , 'StartDate']]
-    datas = get_datas_entities_age(year)
 
-    if len(frame) == 0:
+    if frame is None or len(frame) == 0:
         return {
             'data': [
                 go.Bar(
                     x = xaxis,
-                    y = datas,
+                    y = [],
                     marker = {
                         'color': DEFAULT_COLOURS_1  
                     },
@@ -112,9 +108,11 @@ def create_chart_age(frame):
             ],
             'layout' : DEFAULT_LAYOUT
         }
+    else:
         
-
-    if frame is not None:
+        year = [d.split('-')[2] for d in frame.loc[: , 'StartDate']]
+        datas = get_datas_entities_age(year)
+        
         return {
             'data': [
                 go.Bar(
@@ -145,13 +143,13 @@ def create_chart_age(frame):
         }
 
 def create_chart_starting_date(frame):
-    xaxis, datas = get_datas_starting_date(frame.loc[: , 'StartDate'])
-    if len(frame) == 0:
+    
+    if frame is None or len(frame) == 0:
         return {
             'data' : [
                  go.Bar(
-                    x = xaxis,
-                    y = datas,
+                    x = [],
+                    y = [],
                     marker = {
                         'color':'goldenrod'
                     },
@@ -161,8 +159,8 @@ def create_chart_starting_date(frame):
             ],
             'layout' : DEFAULT_LAYOUT
         }
-        
-    if frame is not None: 
+    else:
+        xaxis, datas = get_datas_starting_date(frame.loc[: , 'StartDate'])
         return {
             'data' : [
                  go.Bar(
@@ -192,14 +190,12 @@ def create_chart_starting_date(frame):
         }
 
 def create_chart_employees(frame):
-    xaxis = ['1 to 5', '5 to 10', '10 to 20', '20 to 50', '50 to 100', '100 to 500', '500 to 1000', 'More than 1000']
-    datas, list_emp = get_datas_employees(frame.loc[: , "employees"])
-    if len(frame) == 0:
+    if frame is None or len(frame) == 0:
         return {
             'data': [
                 go.Bar(
-                    x = xaxis,
-                    y = datas,
+                    x = [],
+                    y = [],
                     marker = {
                         'color': DEFAULT_COLOURS_3    
                     },
@@ -209,7 +205,9 @@ def create_chart_employees(frame):
             'layout' : DEFAULT_LAYOUT
         }
         
-    if frame is not None:
+    else:
+        xaxis = ['1 to 5', '5 to 10', '10 to 20', '20 to 50', '50 to 100', '100 to 500', '500 to 1000', 'More than 1000']
+        datas, list_emp = get_datas_employees(frame.loc[: , "employees"])
         return {
             'data': [
                 go.Bar(
@@ -237,21 +235,19 @@ def create_chart_employees(frame):
         }
 
 def create_chart_mapbox(frame):
-    lat = frame.loc[: , 'latitude']
-    lon = frame.loc[: , 'longitude']
-    names = frame.loc[: , 'Denomination']
+    
 
-    if len(frame) == 0:
+    if frame is None or len(frame) == 0:
         return { 
             'data' : [
                 go.Scattermapbox(
-                    lat = lat,
-                    lon = lon,
+                    lat = [],
+                    lon = [],
                     mode = 'markers',
                     marker=go.scattermapbox.Marker(
                         size=9
                     ),
-                    text = names,
+                    text = [],
                     hoverinfo = 'text',
                     visible = False,
                 )
@@ -276,9 +272,10 @@ def create_chart_mapbox(frame):
                     ),             
                 )
         }
-        
-
-    if frame is not None:
+    else:
+        lat = frame.loc[: , 'latitude']
+        lon = frame.loc[: , 'longitude']
+        names = frame.loc[: , 'Denomination']
         return { 
                 'data' : [
                     go.Scattermapbox(
@@ -318,16 +315,12 @@ def create_chart_mapbox(frame):
 
 
 def create_chart_province(frame):
-    frame_prov = frame[['EntityNumber','province']].groupby('province').size().to_frame('count')
-    list_prov = frame_prov.index.tolist()
-    prov_prop = frame_prov.loc[: , 'count']
-
-    if len(frame) == 0:
+    if frame is None or len(frame) == 0:
         return {
             'data': [
                 go.Bar(
-                    x = prov_prop,
-                    y = list_prov,
+                    x = [],
+                    y = [],
                     marker = {
                         'color':'purple'
                     },
@@ -337,7 +330,10 @@ def create_chart_province(frame):
             'layout' : DEFAULT_LAYOUT
         }
     
-    if frame is not None:
+    else:
+        frame_prov = frame[['EntityNumber','province']].groupby('province').size().to_frame('count')
+        list_prov = frame_prov.index.tolist()
+        prov_prop = frame_prov.loc[: , 'count']
         return {
             'data': [
                 go.Bar(
@@ -370,18 +366,7 @@ def create_chart_province(frame):
                     
                 )
             )
-                
         }
 
-            
-
-
-        
-
-
-
-
-   
-    
 
 

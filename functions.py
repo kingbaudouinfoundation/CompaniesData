@@ -27,6 +27,10 @@ DICT_REGIONS = {
 # Params:
 # @frame : frame created from the csv file
 def get_info(frame):
+
+    if frame is None or len(frame) == 0:
+        return html.Div('')
+
     entities = str(len(frame))
     dates = [int(d.split('-')[2]) for d in frame.loc[: , 'StartDate']]
     employees = [e for e in frame.loc[: , 'employees']]
@@ -41,9 +45,6 @@ def get_info(frame):
             inf = inf + i
         if len(x) == 0 and x is not None:
             inf = inf + 1000
-    
-    if len(frame) == 0:
-        return html.Div('')
     
     if frame is not None:
         this_year = datetime.datetime.now()

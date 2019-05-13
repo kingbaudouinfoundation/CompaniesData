@@ -92,7 +92,7 @@ app.layout = html.Div([
                             style = {'width':'250px', 'backgroundColor':'white', 'marginLeft':'20px'},
                             options = filters_regions,
                             placeholder="All",
-                            multi = 'True'
+                            multi = True
                         ),
 
                         html.P('Employees:', style = {'color':'sandybrown','marginLeft':'20px','fontWeight':'bold'}),
@@ -101,7 +101,7 @@ app.layout = html.Div([
                             style = {'width':'250px', 'backgroundColor':'white', 'marginLeft':'20px'},
                             options = filters_employees,
                             placeholder="All",
-                            multi = 'True'
+                            multi = True
                         ),
                         html.P('Juridical Forms:', style = {'color':'sandybrown','marginLeft':'20px','fontWeight':'bold'}),
                         dcc.Dropdown(
@@ -109,7 +109,7 @@ app.layout = html.Div([
                             style = {'width':'250px', 'backgroundColor':'white', 'marginLeft':'20px'},
                             options = filters_JF,
                             placeholder="All",
-                            multi = 'True'
+                            multi = True
                         )
 
             ],id = "left2")
@@ -227,38 +227,40 @@ def update_output(list_of_contents, list_of_names, list_of_dates):
 
         global filters_regions, filters_employees, filters_JF
         filters_regions, filters_employees, filters_JF = build_filters(dframe)
+    else:
+        dframe = pd.DataFrame()
 
-        return [
-                dcc.Graph(
-                    id = 'graph1',
-                    figure = create_chart_JF(dframe.copy())
-                )
-            ], [
-                dcc.Graph(
-                    id = 'graph2',
-                    figure = create_chart_age(dframe.copy())
-                )
-            ], [
-                dcc.Graph(
-                    id = 'graph3',
-                    figure = create_chart_starting_date(dframe.copy())
-                )
-            ], [
-                dcc.Graph(
-                    id = 'graph4',
-                    figure = create_chart_employees(dframe.copy())
-                )
-            ], [
-                dcc.Graph(
-                    id = 'graph5',
-                    figure = create_chart_mapbox(dframe.copy())
-                )
-            ], [
-                dcc.Graph(
-                    id = 'graph6',
-                    figure = create_chart_province(dframe.copy())
-                )
-            ], filters_regions, filters_employees, filters_JF, get_info(dframe.copy()) 
+    return [
+            dcc.Graph(
+                id = 'graph1',
+                figure = create_chart_JF(dframe.copy())
+            )
+        ], [
+            dcc.Graph(
+                id = 'graph2',
+                figure = create_chart_age(dframe.copy())
+            )
+        ], [
+            dcc.Graph(
+                id = 'graph3',
+                figure = create_chart_starting_date(dframe.copy())
+            )
+        ], [
+            dcc.Graph(
+                id = 'graph4',
+                figure = create_chart_employees(dframe.copy())
+            )
+        ], [
+            dcc.Graph(
+                id = 'graph5',
+                figure = create_chart_mapbox(dframe.copy())
+            )
+        ], [
+            dcc.Graph(
+                id = 'graph6',
+                figure = create_chart_province(dframe.copy())
+            )
+        ], filters_regions, filters_employees, filters_JF, get_info(dframe.copy())
 
 
 @app.callback(
@@ -283,6 +285,7 @@ def update_graph(regions, employees, jf):
 
     if len(dframe.copy()) == 0:
         print('no df')
+        return create_chart_JF(None), create_chart_age(None), create_chart_starting_date(None), create_chart_employees(None), create_chart_mapbox(None), create_chart_province(None)
     else:
         filtered_df = filter_df(dframe.copy(), filters)
         return  create_chart_JF(filtered_df), create_chart_age(filtered_df), create_chart_starting_date(filtered_df), create_chart_employees(filtered_df), create_chart_mapbox(filtered_df), create_chart_province(filtered_df)
