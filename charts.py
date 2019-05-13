@@ -74,17 +74,14 @@ def create_chart_JF(frame):
             ],
             'layout' : go.Layout(
                 margin = go.layout.Margin(
-                           b = 250
+                           t = 100
                     ),
                 title = 'Distribution by juridical forms - based on ' + str(len(frame)) + ' entities',
                 xaxis = go.layout.XAxis(
                     showgrid = False,
                     showline = False,
                     zeroline = False,
-                    tickangle = 60,
-                    tickfont = dict(
-                        size = 8,
-                    ),
+                    showticklabels = False,
                 ),
                 yaxis = go.layout.YAxis(
                     showgrid = False,
@@ -130,6 +127,9 @@ def create_chart_age(frame):
             ],
             'layout' : go.Layout(
                 title = 'Entities age - based on ' + str(len(frame)) + ' entities',
+                margin = go.layout.Margin(
+                            t=100,
+                    ),
                 xaxis = go.layout.XAxis(
                     showgrid = False,
                     showline = False,
@@ -139,7 +139,7 @@ def create_chart_age(frame):
                     showgrid = False,
                     showline = False,
                     zeroline = False,
-                    
+
                 )
             )
         }
@@ -185,6 +185,7 @@ def create_chart_starting_date(frame):
                     showgrid = False,
                     showline = False,
                     zeroline = False,
+                    showticklabels=False
             
                 )
             )
@@ -272,10 +273,8 @@ def create_chart_mapbox(frame):
                             b=0,
                             t=80,
                             pad=0
-                    ),
-                    
+                    ),             
                 )
-
         }
         
 
@@ -353,10 +352,11 @@ def create_chart_province(frame):
             ],
             'layout' : go.Layout(
                 title = 'Distribution by provinces - based on ' + str(len(frame)) + ' entities',
-                width = 700,
                 margin = go.layout.Margin(
-                    l = 200,
-                    t = 150
+                    t = 150,
+                    r = 180,
+                    l = 180,
+                    pad = 10,
                 ),
                 xaxis = go.layout.XAxis(
                     showgrid = False,
