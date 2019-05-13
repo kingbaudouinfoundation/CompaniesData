@@ -139,7 +139,7 @@ app.layout = html.Div([
                     id = 'graph2',
                     figure = create_chart_age(dframe.copy())
                 )
-            ]
+            ],
         ),
         html.Div(
             id = 'graph3_container',
@@ -258,7 +258,7 @@ def update_output(list_of_contents, list_of_names, list_of_dates):
                     id = 'graph6',
                     figure = create_chart_province(dframe.copy())
                 )
-            ], filters_regions, filters_employees, filters_JF, get_info(dframe.copy())
+            ], filters_regions, filters_employees, filters_JF, get_info(dframe.copy()) 
 
 
 @app.callback(
@@ -268,7 +268,6 @@ def update_output(list_of_contents, list_of_names, list_of_dates):
     Output('graph4', 'figure'),
     Output('graph5', 'figure'),
     Output('graph6', 'figure'),
-    #Output('dataset-info', 'children')
     ],
     [Input('regions', 'value'),
      Input('employees', 'value'),
@@ -282,9 +281,14 @@ def update_graph(regions, employees, jf):
         'jf': jf
     }
 
-    filtered_df = filter_df(dframe.copy(), filters)
+    if len(dframe.copy()) == 0:
+        print('no df')
+    else:
+        filtered_df = filter_df(dframe.copy(), filters)
+        return  create_chart_JF(filtered_df), create_chart_age(filtered_df), create_chart_starting_date(filtered_df), create_chart_employees(filtered_df), create_chart_mapbox(filtered_df), create_chart_province(filtered_df)
+   
 
-    return  create_chart_JF(filtered_df), create_chart_age(filtered_df), create_chart_starting_date(filtered_df), create_chart_employees(filtered_df), create_chart_mapbox(filtered_df), create_chart_province(filtered_df)#, get_info(filtered_df)
+    
 
 
 if __name__ == '__main__':
