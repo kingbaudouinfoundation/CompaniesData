@@ -32,7 +32,7 @@ def get_info(frame):
         return html.Div('')
 
     entities = str(len(frame))
-    dates = [int(d.split('-')[2]) for d in frame.loc[: , 'StartDate']]
+    dates = [int(d) for d in frame.loc[: , 'StartingDate']]
     employees = [e for e in frame.loc[: , 'employees']]
     
     inf = 0
@@ -140,7 +140,7 @@ def get_datas_starting_date(tab):
     year = []
     year_prop = []
 
-    year = [d.split('-')[2] for d in tab]
+    year = [d for d in tab]
     x = [d for d in year if x.count(d) == 0]
     year_prop = [year.count(d) for d in year]
 
@@ -249,6 +249,7 @@ def get_datas_employees(tab):
 
     return prop_empl, list_emp
 
+'''
 def build_data_geolocation(tab, frame, num):
     list_lat = []
     list_long = []
@@ -303,6 +304,7 @@ def build_data_geolocation(tab, frame, num):
         y_province.append(i[1])
 
     return list_lat, list_long, list_name, x_province, y_province, provinces
+'''
 
 def parse_contents(contents, filename, date):
 
@@ -329,10 +331,11 @@ def parse_contents(contents, filename, date):
 
     
     timer3 = datetime.datetime.now()
-    query = 'SELECT EntityNumber, JuridicalForm, StartDate, Zipcode, MunicipalityFR, Employees FROM enterprise_addresses WHERE EntityNumber in' + str(tuple(format_numbers)) + 'AND Zipcode IS NOT NULL AND MunicipalityFR IS NOT NULL'
+    query = 'SELECT * FROM entities_details WHERE EntityNumber in' + str(tuple(format_numbers))
     frame = pd.read_sql_query(query, connection)
     timer4 = datetime.datetime.now()
 
+    '''
     marker2 = timer4 - timer3
     print(" ")
     print("fetchind datas with DB: ")
@@ -380,7 +383,7 @@ def parse_contents(contents, filename, date):
     names = pd.read_sql_query(query, connection)
     timer10 = datetime.datetime.now()
 
-    connection.close()
+    
 
     new_merge = pd.merge(new_merge, names, on = 'EntityNumber')
     
@@ -414,6 +417,9 @@ def parse_contents(contents, filename, date):
     
     merge['Regions'] = list_regions
     merge['Denomination'] = new_merge.loc[: , 'Denomination']
+
+    connection.close()
+
     timer12 = datetime.datetime.now()
 
     marker6 = timer12 - timer11
@@ -423,7 +429,8 @@ def parse_contents(contents, filename, date):
     print("ends at: " + str(timer12))
     print("duration: " + str(marker6))
     print(" ")
+    '''
 
 
     
-    return merge.values.tolist()
+    return frame.values.tolist()

@@ -110,7 +110,7 @@ def create_chart_age(frame):
         }
     else:
         
-        year = [d.split('-')[2] for d in frame.loc[: , 'StartDate']]
+        year = frame.loc[: , 'StartingDate']
         datas = get_datas_entities_age(year)
         
         return {
@@ -160,7 +160,7 @@ def create_chart_starting_date(frame):
             'layout' : DEFAULT_LAYOUT
         }
     else:
-        xaxis, datas = get_datas_starting_date(frame.loc[: , 'StartDate'])
+        xaxis, datas = get_datas_starting_date(frame.loc[: , 'StartingDate'])
         return {
             'data' : [
                  go.Bar(

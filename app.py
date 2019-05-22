@@ -19,7 +19,7 @@ from charts import create_chart_JF, create_chart_age, create_chart_starting_date
 
 mapbox_access_token = 'pk.eyJ1IjoidGhvbWFzdnJvIiwiYSI6ImNqdWI5Y2JxdjBhYW40NnBpa2RhcHBnb3kifQ.9N4rhGAGmo9zqnXOlt-WOw'
 
-LABELS = ['EntityNumber', 'JuridicalForm', 'StartDate', 'Zipcode', 'MunicipalityFR', 'Description', 'employees','latitude', 'longitude', 'province', 'Regions', 'Denomination']
+LABELS = ['EntityNumber', 'JuridicalForm', 'Zipcode', 'MunicipalityFR', 'MunicipalityNL','latitude', 'longitude', 'province', 'employees', 'StartingDate', 'Description', 'Denomination','Regions']
 
 global dframe
 dframe = pd.DataFrame(columns = LABELS)
