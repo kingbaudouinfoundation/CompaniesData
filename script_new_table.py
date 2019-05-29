@@ -14,8 +14,7 @@ import io
 import csv 
 import sqlite3
 
-from functions import format_employees, get_datas_employees
-from index import DB_FOLDER
+from functions import format_employees, get_datas_employees, DB_FOLDER
 
 DICT_REGIONS = {
         'Bruxelles' : 'Bruxelles (19 communes)',

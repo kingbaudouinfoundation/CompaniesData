@@ -13,8 +13,12 @@ import plotly.graph_objs as go
 import io
 import csv 
 import sqlite3
+import os
 
-from index import DB_FOLDER
+DB_FOLDER=os.environ.get(
+    "DB_FOLDER",
+    os.getcwd()
+)
 
 DICT_REGIONS = {
         'Bruxelles' : 'Bruxelles (19 communes)',
