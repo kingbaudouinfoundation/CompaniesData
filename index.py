@@ -1,3 +1,4 @@
+import os
 import dash
 import base64
 import datetime 
@@ -16,6 +17,11 @@ import sqlite3
 
 from functions import get_info, build_filters, parse_contents, create_dataframe
 from charts import create_chart_JF, create_chart_age, create_chart_starting_date, create_chart_employees, create_chart_mapbox, create_chart_province
+
+DB_FOLDER=os.environ.get(
+    "DB_FOLDER",
+    os.getcwd()
+)
 
 mapbox_access_token = 'pk.eyJ1IjoidGhvbWFzdnJvIiwiYSI6ImNqdWI5Y2JxdjBhYW40NnBpa2RhcHBnb3kifQ.9N4rhGAGmo9zqnXOlt-WOw'
 

@@ -15,6 +15,7 @@ import csv
 import sqlite3
 
 from functions import format_employees, get_datas_employees
+from index import DB_FOLDER
 
 DICT_REGIONS = {
         'Bruxelles' : 'Bruxelles (19 communes)',
@@ -22,7 +23,7 @@ DICT_REGIONS = {
         'Flandre' : ['Brabant Flamand', 'Anvers', 'Limbourg', 'Flandre-Occidentale', 'Flandre-Orientale']
 }
 
-connection = sqlite3.connect('kbo.sqlite3')
+connection = sqlite3.connect(DB_FOLDER+'/kbo.sqlite3')
 statement = connection.cursor()
 
 query = 'SELECT EntityNumber, JuridicalForm, StartDate, Zipcode, MunicipalityFR, MunicipalityNL, Employees FROM enterprise_addresses WHERE Zipcode IS NOT NULL AND MunicipalityFR IS NOT NULL'

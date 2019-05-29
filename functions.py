@@ -14,6 +14,8 @@ import io
 import csv 
 import sqlite3
 
+from index import DB_FOLDER
+
 DICT_REGIONS = {
         'Bruxelles' : 'Bruxelles (19 communes)',
         'Wallonie' : ['Brabant Wallon', 'Liège', 'Namur', 'Hainaut', 'Luxembourg'],
@@ -326,7 +328,7 @@ def parse_contents(contents, filename, date):
 
     format_numbers = ['0' + '.'.join(n.split()) for n in numeros if len(n) == 11]
     
-    connection = sqlite3.connect('kbo.sqlite3')
+    connection = sqlite3.connect(DB_FOLDER+'/kbo.sqlite3')
     statement = connection.cursor()
 
     
