@@ -389,7 +389,7 @@ def update_from_filters(n_clicks, regions, employees, jf):
     else:
 
         if n_clicks is not None:
-
+            
             filters = state['filters']
             print( state['filters']['regions'])
 
