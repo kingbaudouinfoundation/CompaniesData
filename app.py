@@ -66,6 +66,8 @@ cache = Cache(app.server, config = {
     'CACHE_DIR': 'cache-directory'
 })
 
+server = app.server
+
 TIMEOUT = 60
 
 app.title = 'Companies Data'
