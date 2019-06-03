@@ -1,3 +1,4 @@
+
 import dash
 import base64
 import datetime 
@@ -14,22 +15,34 @@ import io
 import csv 
 import sqlite3
 
-from functions import get_info, build_filters, parse_contents, create_dataframe
+from functions import get_info, build_filters, parse_contents, create_dataframe, build_sql_query
 from charts import create_chart_JF, create_chart_age, create_chart_starting_date, create_chart_employees, create_chart_mapbox, create_chart_province
 
 mapbox_access_token = 'pk.eyJ1IjoidGhvbWFzdnJvIiwiYSI6ImNqdWI5Y2JxdjBhYW40NnBpa2RhcHBnb3kifQ.9N4rhGAGmo9zqnXOlt-WOw'
 
-LABELS = ['EntityNumber', 'JuridicalForm', 'Zipcode', 'MunicipalityFR', 'MunicipalityNL','latitude', 'longitude', 'province', 'employees', 'StartingDate', 'Description', 'Denomination','Regions']
+LABELS = ['EnterpriseNumber', 'Zipcode', 'MunicipalityFR', 'MunicipalityNL', 'juridicalForm', 'StartingDate','latitudes', 'longitudes', 'provinces', 'Regions', 'Denomination','Description', 'employees']
+
 
 global dframe
 dframe = pd.DataFrame(columns = LABELS)
 
+global state 
+state = {
+    'filters' : {
+        'regions': [],
+        'employees': [],
+        'jf': []
+    },
+    'file': [],
+    'frame': pd.DataFrame(columns = LABELS)
+}
+
+
 global filters_regions, filters_employees, filters_JF
-filters_regions, filters_employees, filters_JF = build_filters(dframe)
+filters_regions, filters_employees, filters_JF = build_filters()
 
-global entities
-entities = get_info(dframe)
-
+#global entities
+#entities = get_info(dframe)
 
 DEFAULT_LAYOUT = go.Layout(
     xaxis = go.layout.XAxis(
@@ -110,7 +123,10 @@ app.layout = html.Div([
                             options = filters_JF,
                             placeholder="All",
                             multi = True
-                        )
+                        ),
+                        html.P(),
+                        html.P(),
+                        html.Button('Search', id='button', style = {'width':'90px', 'height':'30px', 'backgroundColor':'white', 'marginLeft':'20px'}),
 
             ],id = "left2")
         
@@ -121,66 +137,108 @@ app.layout = html.Div([
     html.Div([
 
         html.Div(' ', style = {'backgroundColor':'lightgrey', 'height':'50px'}),
-        html.Div('Upload a dataset and see your results below', style = {'color':'mediumvioletred','fontSize':'130%','marginTop':'40px', 'fontWeight':'bold'}),
-        html.Div(id = 'dataset-info'),
+        html.Div('Data visualization tools', style = {'color':'mediumvioletred','fontSize':'130%','marginTop':'40px', 'fontWeight':'bold'}),
+        html.Div('Select filters aside and make your research from the database. Upload a file if you want to see data from specific enttities.', style = {'color':'gray','fontSize':'90%','marginTop':'40px', 'fontWeight':'bold'}),
+        html.P(''),
+        html.Hr(style = {'marginLeft':'70px', 'marginRight':'70px', 'color':'lightgray'}),
+        html.Div(id = 'empty'),
         html.Div(
-            id = 'graph1_container',
+            id = 'dataset-info',
             children = [
-                dcc.Graph(
-                    id = 'graph1',
-                    figure = create_chart_JF(dframe.copy())
+                html.Div(
+                    id = 'update-info'
                 )
+            ]
+            ),
+        html.Div(
+            id = 'div1',
+            children = [
+                html.Div(
+                    id = 'graph1_container',
+                    children = [
+                        dcc.Graph(
+                            id = 'graph1',
+                            figure = create_chart_JF(dframe.copy())
+                        )
+                    ]
+                ),
             ]
         ),
         html.Div(
-            id = 'graph2_container',
+            id = 'div2',
             children = [
-                dcc.Graph(
-                    id = 'graph2',
-                    figure = create_chart_age(dframe.copy())
-                )
-            ],
-        ),
-        html.Div(
-            id = 'graph3_container',
-            children = [
-                dcc.Graph(
-                    id = 'graph3',
-                    figure = create_chart_starting_date(dframe.copy())
-                )
+                html.Div(
+                    id = 'graph2_container',
+                    children = [
+                        dcc.Graph(
+                            id = 'graph2',
+                            figure = create_chart_age(dframe.copy())
+                        )
+                    ],
+                ),
             ]
         ),
         html.Div(
-            id = 'graph4_container',
+            id = 'div3',
             children = [
-                dcc.Graph(
-                    id = 'graph4',
-                    figure = create_chart_employees(dframe.copy())
-                )
-            ]
-        ),
-        
-        html.Div(
-            id = 'graph5_container',
-            children = [
-                dcc.Graph(
-                    id = 'graph5',
-                    figure = {
-                        'data': [create_chart_mapbox(dframe.copy())],
-                        'layout': DEFAULT_LAYOUT
-                    },
-                )
+                html.Div(
+                    id = 'graph3_container',
+                    children = [
+                        dcc.Graph(
+                            id = 'graph3',
+                            figure = create_chart_starting_date(dframe.copy())
+                        )
+                    ]
+                ),
             ]
         ),
         html.Div(
-            id = 'graph6_container',
+            id = 'div4',
             children = [
-                dcc.Graph(
-                    id = 'graph6',
-                    figure = create_chart_province(dframe.copy())
+                html.Div(
+                    id = 'graph4_container',
+                    children = [
+                        dcc.Graph(
+                            id = 'graph4',
+                            figure = create_chart_employees(dframe.copy())
+                        )
+                    ]
+                ),
+            ]
+        ),
+        html.Div(
+            id = 'div5',
+            children = [
+                html.Div(
+                    id = 'graph5_container',
+                    children = [
+                        dcc.Graph(
+                            id = 'graph5',
+                            figure = {
+                                'data': [create_chart_mapbox(dframe.copy())],
+                                'layout': DEFAULT_LAYOUT
+                            },
+                        )
+                    ]
+                ),
+            ]
+        ),
+        html.Div(
+            id = 'div6',
+            children = [
+                html.Div(
+                    id = 'graph6_container',
+                    children = [
+                        dcc.Graph(
+                            id = 'graph6',
+                            figure = create_chart_province(dframe.copy())
+                        )
+                    ]
                 )
             ]
-        )
+        ),
+            
+    
         
 
     ], id = "right")
@@ -200,35 +258,41 @@ def filter_df(frame, filters={}):
 
 
 @app.callback(
-    [Output('graph1_container', 'children'), 
-    Output('graph2_container', 'children'),
-    Output('graph3_container', 'children'),
-    Output('graph4_container', 'children'),
-    Output('graph5_container', 'children'),
-    Output('graph6_container', 'children'),
+    [Output('div1', 'children'), 
+    Output('div2', 'children'),
+    Output('div3', 'children'),
+    Output('div4', 'children'),
+    Output('div5', 'children'),
+    Output('div6', 'children'),
     Output('regions', 'options'),
     Output('employees', 'options'),
     Output('jf', 'options'),
-    Output('dataset-info', 'children')
     ],
     [Input('upload-data', 'contents')],
     [State('upload-data', 'filename'),
     State('upload-data', 'last_modified')])
-def update_output(list_of_contents, list_of_names, list_of_dates):
+def file_reader(list_of_contents, list_of_names, list_of_dates):
     if list_of_contents is not None:
         children = [
             parse_contents(c, n, d) for c, n, d in
             zip(list_of_contents, list_of_names, list_of_dates)]
-        datas = []
+        for d in children:
+            datas = d
         for r in children:
             datas = r
-        global dframe
-        dframe = pd.DataFrame(datas, columns = LABELS)
 
-        global filters_regions, filters_employees, filters_JF
-        filters_regions, filters_employees, filters_JF = build_filters(dframe)
+        connection = sqlite3.connect('kbo.sqlite3')
+        query = 'SELECT DISTINCT * FROM enterprises_addresses WHERE EnterpriseNumber in' + str(tuple(datas))
+        global dframe
+        dframe = pd.read_sql_query(query, connection)
+
+        state['file'] = dframe.loc[: , 'EnterpriseNumber']
+        state['frame'] = dframe
+
     else:
-        dframe = pd.DataFrame()
+
+        state['frame'] = pd.DataFrame()
+        state['file'] = []
 
     return [
             dcc.Graph(
@@ -260,16 +324,17 @@ def update_output(list_of_contents, list_of_names, list_of_dates):
                 id = 'graph6',
                 figure = create_chart_province(dframe.copy())
             )
-        ], filters_regions, filters_employees, filters_JF, get_info(dframe.copy())
+        ], filters_regions, filters_employees, filters_JF
 
-
+'''
 @app.callback(
-    [Output('graph1', 'figure'),
-    Output('graph2', 'figure'),
-    Output('graph3', 'figure'),
-    Output('graph4', 'figure'),
-    Output('graph5', 'figure'),
-    Output('graph6', 'figure'),
+    [Output('graph1_container', 'children'),
+    Output('graph2_container', 'children'),
+    Output('graph3_container', 'children'),
+    Output('graph4_container', 'children'),
+    Output('graph5_container', 'children'),
+    Output('graph6_container', 'children'),
+    Output('dataset-info', 'children')
     ],
     [Input('regions', 'value'),
      Input('employees', 'value'),
@@ -283,16 +348,89 @@ def update_graph(regions, employees, jf):
         'jf': jf
     }
 
-    if len(dframe.copy()) == 0:
-        print('no df')
-        return create_chart_JF(None), create_chart_age(None), create_chart_starting_date(None), create_chart_employees(None), create_chart_mapbox(None), create_chart_province(None)
-    else:
-        filtered_df = filter_df(dframe.copy(), filters)
-        return  create_chart_JF(filtered_df), create_chart_age(filtered_df), create_chart_starting_date(filtered_df), create_chart_employees(filtered_df), create_chart_mapbox(filtered_df), create_chart_province(filtered_df)
-   
+    state['filters']['regions'] = regions
+    state['filters']['employees'] = employees
+    state['filters']['jf'] = jf
 
+
+    if state['frame'] is not None:
+        filtered_df = filter_df(state['frame'].copy(), filters)
+        return  create_chart_JF(filtered_df), create_chart_age(filtered_df), create_chart_starting_date(filtered_df), create_chart_employees(filtered_df), create_chart_mapbox(filtered_df), create_chart_province(filtered_df), get_info(filtered_df)
+    '''
+
+@app.callback(
+    [Output('graph1', 'figure'),
+    Output('graph2', 'figure'),
+    Output('graph3', 'figure'),
+    Output('graph4', 'figure'),
+    Output('graph5', 'figure'),
+    Output('graph6', 'figure'),
+    Output('dataset-info', 'children'),
+    ],
+    [Input('button', 'n_clicks'),
+     Input('regions', 'value'),
+     Input('employees', 'value'),
+     Input('jf', 'value')])
+def update_from_filters(n_clicks, regions, employees, jf):
+
+    filters = {
+        'regions': regions,
+        'employees': employees,
+        'jf': jf
+    }
+
+    state['filters']['regions'] = regions
+    state['filters']['employees'] = employees
+    state['filters']['jf'] = jf
+
+    if state['frame'] is not None:
+            filtered_df = filter_df(state['frame'].copy(), filters)
+            return  create_chart_JF(filtered_df), create_chart_age(filtered_df), create_chart_starting_date(filtered_df), create_chart_employees(filtered_df), create_chart_mapbox(filtered_df), create_chart_province(filtered_df), get_info(filtered_df)
+    else:
+
+        if n_clicks is not None:
+
+            filters = state['filters']
+            print( state['filters']['regions'])
+
+            connection = sqlite3.connect('kbo.sqlite3')
+            statement = connection.cursor()
+            print('connexion Ok')
+            regions = []
+            employees = []
+            jf = []
+            query = ''
+            query_filters = []
+
+            if 'regions' in filters and filters['regions'] is not None and len(filters['regions']) > 0:
+                regions = filters.get('regions')
+                query_filters.append("Regions in ("  + ','.join(['?']*len(regions)) + ")")
+            if 'employees' in filters and filters['employees'] is not None and len(filters['employees']) > 0:
+                employees = filters.get('employees')
+                query_filters.append("employees in (" + ','.join(['?']*len(employees)) + ")")
+            if 'jf' in filters and filters['jf'] is not None and len(filters['jf']) > 0:
+                jf = filters.get('jf')
+                query_filters.append("Description in ("   + ','.join(['?']*len(jf)) + ")")
+
+            print('filters ok')
+            query = "SELECT * from enterprises_addresses"
+
+            if len(query_filters) > 0:
+                print('queryOk')
+                query += " WHERE " + " AND ".join(query_filters)
+            else:
+                print('nofilters')
+                return create_chart_JF(empty_df), create_chart_age(empty_df), create_chart_starting_date(empty_df), create_chart_employees(empty_df), create_chart_mapbox(empty_df), create_chart_province(empty_df), get_info(empty_df)
+            
+            frame = pd.read_sql_query(query, connection, params = regions + employees + jf)
+            return create_chart_JF(frame), create_chart_age(frame), create_chart_starting_date(frame), create_chart_employees(frame), create_chart_mapbox(frame), create_chart_province(frame), get_info(frame)
     
+        else:
+            print('nclicknull')
+            empty_df = pd.DataFrame(columns = LABELS)
+            return create_chart_JF(empty_df), create_chart_age(empty_df), create_chart_starting_date(empty_df), create_chart_employees(empty_df), create_chart_mapbox(empty_df), create_chart_province(empty_df), get_info(empty_df)
 
 
 if __name__ == '__main__':
     app.run_server(debug=True)
+    
