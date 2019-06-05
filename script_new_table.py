@@ -35,12 +35,11 @@ dict_cities = {}
 
 for row in frame.iterrows():
     dict_cities[str(row[1]['postcode']) + ' - ' + row[1]['city']] = row[1]
-
+ 
 latitude = []
 longitude = []
 province = []
-wrong = []
-count = 0
+
 
 data = []
 
@@ -58,20 +57,22 @@ for enterprise in main_frame.iterrows():
                 y.append(x['long'])
                 y.append(x['province'])
                 data.append(y)
+                print(y)
                 
         elif nl_key in dict_cities:
-                x = dict_cities.get(fr_key)
+                x = dict_cities.get(nl_key)
                 y = enterprise[1].tolist()
                 y.append(x['lat'])
                 y.append(x['long'])
                 y.append(x['province'])
                 data.append(y)
+                print(y)
 
         else:
-                count = count + 1
                 y = enterprise[1].tolist()
                 query = "SELECT long, lat, province FROM postcode_geo WHERE postcode = '" + enterprise[1]['Zipcode'] + "'"
                 temp = pd.read_sql_query(query, connection)
+                #print(temp)
                 if len(temp) > 0:
                         s_lat = 0
                         s_long = 0
@@ -83,12 +84,16 @@ for enterprise in main_frame.iterrows():
                         y.append(avg_lat)
                         y.append(avg_long)
                         y.append(row[1]['province'])
-               
-                
+                        data.append(y)
+                        print(y)
+
 timer2 = datetime.datetime.now()
+
+print(len(data))
 
 LABELS = ['EntityNumber', 'JuridicalForm', 'StartDate', 'Zipcode', 'MunicipalityFR', 'MunicipalityNL', 'Employees','latitude', 'longitude', 'province']
 dframe = pd.DataFrame(data, columns = LABELS)
+print(len(dframe))
 
 tab_emp = format_employees(dframe.loc[: , "Employees"])
 prop_empl, list_emp = get_datas_employees(tab_emp)
@@ -123,7 +128,6 @@ dframe['Regions'] = list_regions
 
 dframe.to_csv('new_table.csv', index = False)
 
-print(count)
 print('dataframe created: ' + str(len(data)) + ' rows')
 marker = timer2 - timer1
 print(" ")
