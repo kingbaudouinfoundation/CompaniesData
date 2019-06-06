@@ -50,7 +50,7 @@ def create_chart_JF(adQuery = None):
                     x = [],
                     y = [],
                     marker = {
-                        'color': 'indianred'   
+                        'color': 'cornflowerblue'   
                     },
                     visible = False
                 )
@@ -90,7 +90,7 @@ def create_chart_JF(adQuery = None):
                     x = descriptions,
                     y = descriptions_prop,
                     marker = {
-                        'color': 'indianred'  
+                        'color': 'cornflowerblue'  
                     },
                 )
             ],
@@ -354,7 +354,7 @@ def create_chart_province(adQuery = None):
                     x = [],
                     y = [],
                     marker = {
-                        'color':'purple'
+                        'color':'skyblue'
                     },
                     visible = False
                 )
@@ -376,7 +376,7 @@ def create_chart_province(adQuery = None):
                     x = prov_prop,
                     y = list_prov,
                     marker = {
-                        'color':'purple'
+                        'color':'skyblue'
                     },
                     orientation = 'h',
                     

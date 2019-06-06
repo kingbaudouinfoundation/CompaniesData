@@ -89,7 +89,7 @@ app.layout = html.Div([
                     id='upload-data',
                     children = html.Div([
                         'Drag and Drop or ',
-                        html.A('Select File', style = {'color':'skyblue','textDecoration':'underline'})
+                        html.A('Select File', style = {'color':'skyblue','tuttonextDecoration':'underline'})
                     ], style = {'color':'black'}),
                     style={
                         'height': '60px','lineHeight':'60px','textAlign': 'center','backgroundColor':'whitesmoke'
@@ -104,28 +104,28 @@ app.layout = html.Div([
 
             html.Div([
 
-                        html.Div('FILTERS', style = {'color':'white', 'fontSize':'110%','paddingTop':'60px', 'marginLeft':'20px','fontWeight':'bold'}),
-                        html.P('Regions:', style = {'color':'sandybrown', 'marginLeft':'20px','fontWeight':'bold'}),
+                        html.Div('FILTERS', style = {'color':'lightgray', 'fontSize':'110%','paddingTop':'60px', 'marginLeft':'20px','fontWeight':'bold'}),
+                        html.P('Regions:', style = {'color':'whitesmoke', 'marginLeft':'20px'}),
                         dcc.Dropdown(
                             id = 'regions',
-                            style = {'width':'250px', 'backgroundColor':'white', 'marginLeft':'20px'},
+                            style = {'width':'250px', 'backgroundColor':'lightgray', 'marginLeft':'20px'},
                             options = filters_regions,
                             placeholder="All",
                             multi = True
                         ),
 
-                        html.P('Employees:', style = {'color':'sandybrown','marginLeft':'20px','fontWeight':'bold'}),
+                        html.P('Employees:', style = {'color':'whitesmoke','marginLeft':'20px'}),
                         dcc.Dropdown(
                             id = 'employees',
-                            style = {'width':'250px', 'backgroundColor':'white', 'marginLeft':'20px'},
+                            style = {'width':'250px', 'backgroundColor':'lightgray', 'marginLeft':'20px'},
                             options = filters_employees,
                             placeholder="All",
                             multi = True
                         ),
-                        html.P('Juridical Forms:', style = {'color':'sandybrown','marginLeft':'20px','fontWeight':'bold'}),
+                        html.P('Juridical Forms:', style = {'color':'whitesmoke','marginLeft':'20px'}),
                         dcc.Dropdown(
                             id = 'jf',
-                            style = {'width':'250px', 'backgroundColor':'white', 'marginLeft':'20px'},
+                            style = {'width':'250px', 'backgroundColor':'lightgray', 'marginLeft':'20px'},
                             options = filters_JF,
                             placeholder="All",
                             multi = True
@@ -134,11 +134,11 @@ app.layout = html.Div([
                         html.P(),
                         
                         html.Div([
-                            html.Button('Reset inputs', id='reset', style = {'width':'90px', 'height':'30px', 'backgroundColor':'white', 'marginLeft':'20px', 'border':'none','color':'gray', 'cursor':'pointer'}),
+                            html.Button('Reset inputs', id='reset', style = {'width':'90px', 'height':'30px', 'backgroundColor':'gray', 'marginLeft':'20px', 'border':'none','color':'white', 'cursor':'pointer'}),
                         ]),
                         html.P(''),
                         html.Div([
-                            html.Button('Apply changes', id='button', style = {'width':'90px', 'height':'30px', 'backgroundColor':'white', 'marginLeft':'20px', 'border':'none', 'color':'gray', 'cursor':'pointer'}),
+                            html.Button('Apply changes', id='button', style = {'width':'90px', 'height':'30px', 'backgroundColor':'gray', 'marginLeft':'20px', 'border':'none', 'color':'white', 'cursor':'pointer'}),
                         ])
                         
                         
@@ -152,7 +152,7 @@ app.layout = html.Div([
 
     html.Div([
 
-        html.Div('Data visualization tools', style = {'color':'mediumvioletred','fontSize':'130%','marginTop':'40px', 'fontWeight':'bold'}),
+        html.Div('Data visualization tools', style = {'color':'steelblue','fontSize':'130%','marginTop':'40px', 'fontWeight':'bold'}),
         html.Div('Select filters aside and make your research from the database. Upload a file if you want to see data from specific enttities.', style = {'color':'gray','fontSize':'90%','marginTop':'40px', 'fontWeight':'bold'}),
         html.P('', id = 'blank'),
         html.Hr(style = {'marginLeft':'70px', 'marginRight':'70px', 'color':'lightgray'}),
