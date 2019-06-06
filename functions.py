@@ -249,26 +249,26 @@ def get_datas_employees(tab):
     for row in tab:
         if ' to ' in row:
             x = row.split(' to ')
-            diff = int(x[1]) - int(x[0])
-            if diff <= 5:
+            #diff = int(x[1]) - int(x[0])
+            if int(x[0]) <= 5:
                 P1 = P1 + 1
                 list_emp.append('1 to 5')          
-            elif diff >= 5 and diff <= 10:
+            elif int(x[0]) >= 5 and int(x[1]) <= 10:
                 P2 = P2 + 1
                 list_emp.append('5 to 10')
-            elif diff >= 10 and diff <= 20:
+            elif int(x[0]) >= 10 and int(x[1]) <= 20:
                 P3 = P3 + 1
                 list_emp.append('10 to 20')
-            elif diff >= 20 and diff <= 50:
+            elif int(x[0]) >= 20 and int(x[1]) <= 50:
                 P4 = P4 + 1
                 list_emp.append('20 to 50')             
-            elif diff >= 50 and diff <= 100:
+            elif int(x[0]) >= 50 and int(x[1]) <= 100:
                 P5 = P5 + 1 
                 list_emp.append('50 to 100')
-            elif diff>= 100 and diff <= 500:
+            elif int(x[0]) >= 100 and int(x[1]) <= 500:
                 P6 = P6 + 1 
                 list_emp.append('100 to 500')
-            elif diff >= 500 and diff <= 1000:
+            elif int(x[0]) >= 500 and int(x[1]) <= 1000:
                 P7 = P7 + 1
                 list_emp.append('500 to 1000')
         elif 'more than 1000' in row:
@@ -327,8 +327,6 @@ class AdaptiveQuery:
         with sqlite3.connect(self.db_name) as con:
             cur = con.cursor()
             query = 'SELECT '+ fields+' FROM '+self.table+' WHERE '+self.where+' '+extra
-            print(query)
-            print(self.parameters)
             return cur.execute(query, self.parameters).fetchall()
     
     '''

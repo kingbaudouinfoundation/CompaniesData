@@ -327,37 +327,6 @@ def file_reader(list_of_contents, list_of_names, list_of_dates):
         ], filters_regions, filters_employees, filters_JF
 
 
-'''
-@app.callback(
-    [Output('graph1_container', 'children'),
-    Output('graph2_container', 'children'),
-    Output('graph3_container', 'children'),
-    Output('graph4_container', 'children'),
-    Output('graph5_container', 'children'),
-    Output('graph6_container', 'children'),
-    Output('dataset-info', 'children')
-    ],
-    [Input('regions', 'value'),
-     Input('employees', 'value'),
-     Input('jf', 'value')
-     ])
-def update_graph(regions, employees, jf):
-    
-    filters = {
-        'regions': regions,
-        'employees': employees,
-        'jf': jf
-    }
-
-    state['filters']['regions'] = regions
-    state['filters']['employees'] = employees
-    state['filters']['jf'] = jf
-
-
-    if state['frame'] is not None:
-        filtered_df = filter_df(state['frame'].copy(), filters)
-        return  create_chart_JF(filtered_df), create_chart_age(filtered_df), create_chart_starting_date(filtered_df), create_chart_employees(filtered_df), create_chart_mapbox(filtered_df), create_chart_province(filtered_df), get_info(filtered_df)
-    '''
 
 @app.callback(
     [Output('graph1', 'figure'),
