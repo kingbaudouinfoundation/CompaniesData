@@ -9,12 +9,13 @@
 
 #left {
     flex : 0.5;
+    /*background-color: rgb(14, 36, 32); */
+    background-color: rgb(28, 28, 29)
 }
 
 #left2 {
     height : 4000px;
-    background-color: rgb(14, 36, 32);    
-}
+    background-color: rgb(28, 28, 29)}
 
 #right {
     flex: 2.5;
@@ -40,17 +41,16 @@ body {
     width: 300px;
     margin-left: auto;
     margin-right: auto;
+    margin-bottom: 20px;
     
 }
 
 #top {
-    color:white;
+    color:lightgray;
     padding-top: 60px;
     text-align: center;
-    background-color: rgb(14, 36, 32);    
+    background-color: rgb(28, 28, 29);
     margin-right: auto;
     margin-left: auto;
     height: 40px; 
 }
-
-

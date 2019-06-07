@@ -36,29 +36,32 @@ def get_info(adQuery = None):
 
     if adQuery is None:
         return html.Div([
-                    html.Div('We found', style = {'marginTop':'50px','fontSize':'140%', 'color':'darkgray','fontWeight':'bold'}),
+                    html.Div('We found', style = {'marginTop':'50px','fontSize':'140%', 'color':'lightsteelblue','fontWeight':'bold'}),
                     html.Br(),
                     html.Div([
                         html.Span([
                             html.Br(),
                             html.Br(),
+                            html.Br(),
                             html.Div('0', style = {'fontSize':'350%'}),
                             html.Div('entities'), 
-                        ],style = {'height':'150px', 'width':'150px','display':'inline-block','color':'white','backgroundColor':'lightskyblue','borderRadius':'50%'}),
+                        ],style = {'marginRight':'50px','height':'180px', 'width':'180px','display':'inline-block','color':'lightskyblue','backgroundColor':'white','borderRadius':'50%', 'border':'solid lightskyblue'}),
                         html.Span([
+                            html.Br(),
                             html.Br(),
                             html.Br(),
                             html.Div('0', style = {'fontSize':'350%'}),
                             html.Div('y.o middle-aged'), 
-                        ],style = {'height':'150px', 'width':'150px','display':'inline-block','color':'white','backgroundColor':'goldenrod','borderRadius':'50%'}),
+                        ],style = {'height':'180px', 'width':'180px','display':'inline-block','color':'steelblue','backgroundColor':'white','borderRadius':'50%', 'border':'solid steelblue'}),
                         html.Span([
+                            html.Br(),
                             html.Br(),
                             html.Br(),
                             html.Div('over'),
                             html.Div('0', style = {'fontSize':'250%'}),
                             html.Div('employees')
-                        ],style = {'height':'150px', 'width':'150px','display':'inline-block','color':'white','backgroundColor':'purple','borderRadius':'50%'}),
-                    ], style = {'textAlign':'center'}),
+                        ],style = {'marginLeft':'50px','height':'180px', 'width':'180px','display':'inline-block','color':'midnightblue','backgroundColor':'white','borderRadius':'50%', 'border':'solid midnightblue'}),
+                    ], style = {'textAlign':'center', 'justifyContent':'center'}),
                     
                 ], style = {'textAlign':'center', 'alignItems':'center', 'justifyContent':'center'})
 
@@ -93,28 +96,31 @@ def get_info(adQuery = None):
         avg_age = round(current_year - x)
 
         return html.Div([
-                    html.Div('We found', style = {'marginTop':'50px','fontSize':'140%', 'color':'darkgray','fontWeight':'bold'}),
+                    html.Div('We found', style = {'marginTop':'50px','fontSize':'140%', 'color':'lightsteelblue','fontWeight':'bold'}),
                     html.Br(),
                     html.Div([
                         html.Span([
                             html.Br(),
                             html.Br(),
+                            html.Br(),
                             html.Div(entities, style = {'fontSize':'350%'}),
                             html.Div('entities'), 
-                        ],style = {'height':'150px', 'width':'150px','display':'inline-block','color':'white','backgroundColor':'lightskyblue','borderRadius':'50%'}),
+                        ],style = {'marginRight':'50px','height':'180px', 'width':'180px','display':'inline-block','color':'lightskyblue','backgroundColor':'white','borderRadius':'50%', 'border':'solid lightskyblue'}),
                         html.Span([
+                            html.Br(),
                             html.Br(),
                             html.Br(),
                             html.Div(str(avg_age), style = {'fontSize':'350%'}),
                             html.Div('y.o middle-aged'), 
-                        ],style = {'height':'150px', 'width':'150px','display':'inline-block','color':'white','backgroundColor':'goldenrod','borderRadius':'50%'}),
+                        ],style = {'height':'180px', 'width':'180px','display':'inline-block','color':'steelblue','backgroundColor':'white','borderRadius':'50%', 'border':'solid steelblue'}),
                         html.Span([
+                            html.Br(),
                             html.Br(),
                             html.Br(),
                             html.Div('over'),
                             html.Div(str(inf), style = {'fontSize':'250%'}),
                             html.Div('employees')
-                        ],style = {'height':'150px', 'width':'150px','display':'inline-block','color':'white','backgroundColor':'purple','borderRadius':'50%'}),
+                        ],style = {'marginLeft':'50px','height':'180px', 'width':'180px','display':'inline-block','color':'midnightblue','backgroundColor':'white','borderRadius':'50%', 'border':'solid midnightblue'}),
                     ], style = {'textAlign':'center'}),
                     
                 ], style = {'textAlign':'center', 'alignItems':'center', 'justifyContent':'center'})

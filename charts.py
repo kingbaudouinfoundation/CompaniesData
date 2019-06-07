@@ -50,7 +50,7 @@ def create_chart_JF(adQuery = None):
                     x = [],
                     y = [],
                     marker = {
-                        'color': 'indianred'   
+                        'color': 'cornflowerblue'   
                     },
                     visible = False
                 )
@@ -90,7 +90,7 @@ def create_chart_JF(adQuery = None):
                     x = descriptions,
                     y = descriptions_prop,
                     marker = {
-                        'color': 'indianred'  
+                        'color': 'cornflowerblue'  
                     },
                 )
             ],
@@ -104,7 +104,11 @@ def create_chart_JF(adQuery = None):
                     showline = False,
                     zeroline = False,
                     showticklabels = True,
+                    tickfont=dict(
+                    size=10,
+                    ),
                 ),
+                
                 yaxis = go.layout.YAxis(
                     showgrid = False,
                     showline = False,
@@ -230,13 +234,17 @@ def create_chart_employees(adQuery = None):
         }
         
     else:
-        xaxis = ['0', '1 to 5', '5 to 10', '10 to 20', '20 to 50', '50 to 100', '100 to 500', '500 to 1000', 'More than 1000']
-        datas, list_emp = get_datas_employees(adQuery.get('employees'))
+        rows = adQuery.groupby_count('employees')
+        list_emp = []
+        emp_prop = []
+        for r in rows:
+            list_emp.append(r[0])
+            emp_prop.append(r[1])
         return {
             'data': [
                 go.Bar(
-                    x = xaxis,
-                    y = datas,
+                    x = list_emp,
+                    y = emp_prop,
                     marker = {
                         'color': DEFAULT_COLOURS_3    
                     },
@@ -346,7 +354,7 @@ def create_chart_province(adQuery = None):
                     x = [],
                     y = [],
                     marker = {
-                        'color':'purple'
+                        'color':'skyblue'
                     },
                     visible = False
                 )
@@ -355,22 +363,20 @@ def create_chart_province(adQuery = None):
         }
     
     else:
-        #frame_prov = frame[['EnterpriseNumber','provinces']].groupby('provinces').size().to_frame('count')
         rows = adQuery.groupby_count('provinces')
         list_prov = []
         prov_prop = []
         for r in rows:
             list_prov.append(r[0])
             prov_prop.append(r[1])
-        #list_prov = frame_prov.index.tolist()
-        #prov_prop = frame_prov.loc[: , 'count']
+       
         return {
             'data': [
                 go.Bar(
                     x = prov_prop,
                     y = list_prov,
                     marker = {
-                        'color':'purple'
+                        'color':'skyblue'
                     },
                     orientation = 'h',
                     

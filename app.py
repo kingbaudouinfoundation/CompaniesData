@@ -44,8 +44,7 @@ adQuery = None
 global filters_regions, filters_employees, filters_JF
 filters_regions, filters_employees, filters_JF = build_filters()
 
-#global entities
-#entities = get_info(dframe)
+
 
 DEFAULT_LAYOUT = go.Layout(
     xaxis = go.layout.XAxis(
@@ -80,7 +79,6 @@ app.layout = html.Div([
     html.Div([
         html.Div([
            
-            html.Div(' ', style = {'backgroundColor':'lightgrey', 'height':'50px'}),
             
             html.Div('Change dataset', id = 'top'),
             
@@ -91,7 +89,7 @@ app.layout = html.Div([
                     id='upload-data',
                     children = html.Div([
                         'Drag and Drop or ',
-                        html.A('Select File', style = {'color':'skyblue','textDecoration':'underline'})
+                        html.A('Select File', style = {'color':'skyblue','tuttonextDecoration':'underline'})
                     ], style = {'color':'black'}),
                     style={
                         'height': '60px','lineHeight':'60px','textAlign': 'center','backgroundColor':'whitesmoke'
@@ -99,39 +97,52 @@ app.layout = html.Div([
                     multiple=True
                 ),
 
+
             ], id = "div_up"),
+
+           
 
             html.Div([
 
-                        html.Div('FILTERS', style = {'color':'white', 'fontSize':'110%','paddingTop':'60px', 'marginLeft':'20px','fontWeight':'bold'}),
-                        html.P('Regions:', style = {'color':'sandybrown', 'marginLeft':'20px','fontWeight':'bold'}),
+                        html.Div('FILTERS', style = {'color':'lightgray', 'fontSize':'110%','paddingTop':'60px', 'marginLeft':'20px','fontWeight':'bold'}),
+                        html.P('Regions:', style = {'color':'whitesmoke', 'marginLeft':'20px'}),
                         dcc.Dropdown(
                             id = 'regions',
-                            style = {'width':'250px', 'backgroundColor':'white', 'marginLeft':'20px'},
+                            style = {'width':'250px', 'backgroundColor':'lightgray', 'marginLeft':'20px'},
                             options = filters_regions,
                             placeholder="All",
                             multi = True
                         ),
 
-                        html.P('Employees:', style = {'color':'sandybrown','marginLeft':'20px','fontWeight':'bold'}),
+                        html.P('Employees:', style = {'color':'whitesmoke','marginLeft':'20px'}),
                         dcc.Dropdown(
                             id = 'employees',
-                            style = {'width':'250px', 'backgroundColor':'white', 'marginLeft':'20px'},
+                            style = {'width':'250px', 'backgroundColor':'lightgray', 'marginLeft':'20px'},
                             options = filters_employees,
                             placeholder="All",
                             multi = True
                         ),
-                        html.P('Juridical Forms:', style = {'color':'sandybrown','marginLeft':'20px','fontWeight':'bold'}),
+                        html.P('Juridical Forms:', style = {'color':'whitesmoke','marginLeft':'20px'}),
                         dcc.Dropdown(
                             id = 'jf',
-                            style = {'width':'250px', 'backgroundColor':'white', 'marginLeft':'20px'},
+                            style = {'width':'250px', 'backgroundColor':'lightgray', 'marginLeft':'20px'},
                             options = filters_JF,
                             placeholder="All",
                             multi = True
                         ),
                         html.P(),
                         html.P(),
-                        html.Button('Search', id='button', style = {'width':'90px', 'height':'30px', 'backgroundColor':'white', 'marginLeft':'20px', 'border':'none', 'backgroundColor':'lightgray', 'color':'white', 'cursor':'pointer'}),
+                        
+                        html.Div([
+                            html.Button('Reset inputs', id='reset', style = {'width':'90px', 'height':'30px', 'backgroundColor':'gray', 'marginLeft':'20px', 'border':'none','color':'white', 'cursor':'pointer'}),
+                        ]),
+                        html.P(''),
+                        html.Div([
+                            html.Button('Apply changes', id='button', style = {'width':'90px', 'height':'30px', 'backgroundColor':'gray', 'marginLeft':'20px', 'border':'none', 'color':'white', 'cursor':'pointer'}),
+                        ])
+                        
+                        
+                       
 
             ],id = "left2")
         
@@ -141,10 +152,9 @@ app.layout = html.Div([
 
     html.Div([
 
-        html.Div(' ', style = {'backgroundColor':'lightgrey', 'height':'50px'}),
-        html.Div('Data visualization tools', style = {'color':'mediumvioletred','fontSize':'130%','marginTop':'40px', 'fontWeight':'bold'}),
+        html.Div('Data visualization tools', style = {'color':'steelblue','fontSize':'130%','marginTop':'40px', 'fontWeight':'bold'}),
         html.Div('Select filters aside and make your research from the database. Upload a file if you want to see data from specific enttities.', style = {'color':'gray','fontSize':'90%','marginTop':'40px', 'fontWeight':'bold'}),
-        html.P(''),
+        html.P('', id = 'blank'),
         html.Hr(style = {'marginLeft':'70px', 'marginRight':'70px', 'color':'lightgray'}),
         html.Div(id = 'empty'),
         html.Div(
@@ -250,26 +260,23 @@ app.layout = html.Div([
  
 ], id = "body_page")
 
-'''
-def filter_df(frame, filters={}):
-    if 'regions' in filters and filters['regions'] is not None and len(filters['regions']) > 0:
-        frame = frame[frame['Regions'].isin(filters.get('regions'))]
-    if 'employees' in filters and filters['employees'] is not None and len(filters['employees']) > 0:
-        frame = frame[frame['employees'].isin(filters.get('employees'))]
-    if 'jf' in filters and filters['jf'] is not None and len(filters['jf']) > 0:
-        frame = frame[frame['Description'].isin(filters.get('jf'))]
-    
-    return frame
-'''
+
 
 @app.callback(
-    [Output('div1', 'children'), 
-    Output('div2', 'children'),
-    Output('div3', 'children'),
-    Output('div4', 'children'),
-    Output('div5', 'children'),
-    Output('div6', 'children'),
-    Output('regions', 'options'),
+    Output('blank', 'children'),
+    [Input('reset', 'n_clicks')]
+)
+def reset_page(n_clicks):
+    state['file'] = []
+    state['filters']['regions'] = []
+    state['filters']['employees'] = []
+    state['filters']['jf'] = []
+    adQuery = create_adaptive_query(state)
+    
+    return html.P('')
+
+@app.callback(
+    [Output('regions', 'options'),
     Output('employees', 'options'),
     Output('jf', 'options'),
     ],
@@ -277,6 +284,7 @@ def filter_df(frame, filters={}):
     [State('upload-data', 'filename'),
     State('upload-data', 'last_modified')])
 def file_reader(list_of_contents, list_of_names, list_of_dates):
+    dataset_state = ''
     if list_of_contents is not None:
         children = [
             parse_contents(c, n, d) for c, n, d in
@@ -288,43 +296,14 @@ def file_reader(list_of_contents, list_of_names, list_of_dates):
 
         state['file'] = datas
 
+
+
     else:
         state['file'] = []
     
     adQuery = create_adaptive_query(state)
+    return filters_regions, filters_employees, filters_JF
 
-
-    return [
-            dcc.Graph(
-                id = 'graph1',
-                figure = create_chart_JF(adQuery)
-            )
-        ], [
-            dcc.Graph(
-                id = 'graph2',
-                figure = create_chart_age(adQuery)
-            )
-        ], [
-            dcc.Graph(
-                id = 'graph3',
-                figure = create_chart_starting_date(adQuery)
-            )
-        ], [
-            dcc.Graph(
-                id = 'graph4',
-                figure = create_chart_employees(adQuery)
-            )
-        ], [
-            dcc.Graph(
-                id = 'graph5',
-                figure = create_chart_mapbox(adQuery)
-            )
-        ], [
-            dcc.Graph(
-                id = 'graph6',
-                figure = create_chart_province(adQuery)
-            )
-        ], filters_regions, filters_employees, filters_JF
 
 
 
