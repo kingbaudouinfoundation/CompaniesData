@@ -1,0 +1,7 @@
+cache-directory/*
+*.pyc
+*.csv
+*.xls
+kbo
+kbo.db
+kbo.sqlite3

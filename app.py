@@ -15,7 +15,7 @@ import io
 import csv 
 import sqlite3
 
-from functions import get_info, build_filters, parse_contents, create_dataframe, build_sql_query
+from functions import get_info, build_filters, parse_contents, create_dataframe, AdaptiveQuery
 from charts import create_chart_JF, create_chart_age, create_chart_starting_date, create_chart_employees, create_chart_mapbox, create_chart_province
 
 mapbox_access_token = 'pk.eyJ1IjoidGhvbWFzdnJvIiwiYSI6ImNqdWI5Y2JxdjBhYW40NnBpa2RhcHBnb3kifQ.9N4rhGAGmo9zqnXOlt-WOw'
@@ -36,6 +36,9 @@ state = {
     'file': [],
     'frame': pd.DataFrame(columns = LABELS)
 }
+
+global adQuery
+adQuery = None
 
 
 global filters_regions, filters_employees, filters_JF
@@ -128,7 +131,7 @@ app.layout = html.Div([
                         ),
                         html.P(),
                         html.P(),
-                        html.Button('Search', id='button', style = {'width':'90px', 'height':'30px', 'backgroundColor':'white', 'marginLeft':'20px'}),
+                        html.Button('Search', id='button', style = {'width':'90px', 'height':'30px', 'backgroundColor':'white', 'marginLeft':'20px', 'border':'none', 'backgroundColor':'lightgray', 'color':'white', 'cursor':'pointer'}),
 
             ],id = "left2")
         
@@ -160,7 +163,7 @@ app.layout = html.Div([
                     children = [
                         dcc.Graph(
                             id = 'graph1',
-                            figure = create_chart_JF(dframe.copy())
+                            figure = create_chart_JF(adQuery)
                         )
                     ]
                 ),
@@ -174,7 +177,7 @@ app.layout = html.Div([
                     children = [
                         dcc.Graph(
                             id = 'graph2',
-                            figure = create_chart_age(dframe.copy())
+                            figure = create_chart_age(adQuery)
                         )
                     ],
                 ),
@@ -188,7 +191,7 @@ app.layout = html.Div([
                     children = [
                         dcc.Graph(
                             id = 'graph3',
-                            figure = create_chart_starting_date(dframe.copy())
+                            figure = create_chart_starting_date(adQuery)
                         )
                     ]
                 ),
@@ -202,7 +205,7 @@ app.layout = html.Div([
                     children = [
                         dcc.Graph(
                             id = 'graph4',
-                            figure = create_chart_employees(dframe.copy())
+                            figure = create_chart_employees(adQuery)
                         )
                     ]
                 ),
@@ -217,7 +220,7 @@ app.layout = html.Div([
                         dcc.Graph(
                             id = 'graph5',
                             figure = {
-                                'data': [create_chart_mapbox(dframe.copy())],
+                                'data': [create_chart_mapbox(adQuery)],
                                 'layout': DEFAULT_LAYOUT
                             },
                         )
@@ -233,7 +236,7 @@ app.layout = html.Div([
                     children = [
                         dcc.Graph(
                             id = 'graph6',
-                            figure = create_chart_province(dframe.copy())
+                            figure = create_chart_province(adQuery)
                         )
                     ]
                 )
@@ -247,7 +250,7 @@ app.layout = html.Div([
  
 ], id = "body_page")
 
-
+'''
 def filter_df(frame, filters={}):
     if 'regions' in filters and filters['regions'] is not None and len(filters['regions']) > 0:
         frame = frame[frame['Regions'].isin(filters.get('regions'))]
@@ -257,7 +260,7 @@ def filter_df(frame, filters={}):
         frame = frame[frame['Description'].isin(filters.get('jf'))]
     
     return frame
-
+'''
 
 @app.callback(
     [Output('div1', 'children'), 
@@ -283,82 +286,47 @@ def file_reader(list_of_contents, list_of_names, list_of_dates):
         for r in children:
             datas = r
 
-        connection = sqlite3.connect('kbo.sqlite3')
-        query = 'SELECT DISTINCT * FROM enterprises_addresses WHERE EnterpriseNumber in' + str(tuple(datas))
-        global dframe
-        dframe = pd.read_sql_query(query, connection)
-
-        state['file'] = dframe.loc[: , 'EnterpriseNumber']
-        state['frame'] = dframe
+        state['file'] = datas
 
     else:
-
-        state['frame'] = pd.DataFrame()
         state['file'] = []
+    
+    adQuery = create_adaptive_query(state)
+
 
     return [
             dcc.Graph(
                 id = 'graph1',
-                figure = create_chart_JF(dframe.copy())
+                figure = create_chart_JF(adQuery)
             )
         ], [
             dcc.Graph(
                 id = 'graph2',
-                figure = create_chart_age(dframe.copy())
+                figure = create_chart_age(adQuery)
             )
         ], [
             dcc.Graph(
                 id = 'graph3',
-                figure = create_chart_starting_date(dframe.copy())
+                figure = create_chart_starting_date(adQuery)
             )
         ], [
             dcc.Graph(
                 id = 'graph4',
-                figure = create_chart_employees(dframe.copy())
+                figure = create_chart_employees(adQuery)
             )
         ], [
             dcc.Graph(
                 id = 'graph5',
-                figure = create_chart_mapbox(dframe.copy())
+                figure = create_chart_mapbox(adQuery)
             )
         ], [
             dcc.Graph(
                 id = 'graph6',
-                figure = create_chart_province(dframe.copy())
+                figure = create_chart_province(adQuery)
             )
         ], filters_regions, filters_employees, filters_JF
 
-'''
-@app.callback(
-    [Output('graph1_container', 'children'),
-    Output('graph2_container', 'children'),
-    Output('graph3_container', 'children'),
-    Output('graph4_container', 'children'),
-    Output('graph5_container', 'children'),
-    Output('graph6_container', 'children'),
-    Output('dataset-info', 'children')
-    ],
-    [Input('regions', 'value'),
-     Input('employees', 'value'),
-     Input('jf', 'value')
-     ])
-def update_graph(regions, employees, jf):
-    
-    filters = {
-        'regions': regions,
-        'employees': employees,
-        'jf': jf
-    }
 
-    state['filters']['regions'] = regions
-    state['filters']['employees'] = employees
-    state['filters']['jf'] = jf
-
-
-    if state['frame'] is not None:
-        filtered_df = filter_df(state['frame'].copy(), filters)
-        return  create_chart_JF(filtered_df), create_chart_age(filtered_df), create_chart_starting_date(filtered_df), create_chart_employees(filtered_df), create_chart_mapbox(filtered_df), create_chart_province(filtered_df), get_info(filtered_df)
-    '''
 
 @app.callback(
     [Output('graph1', 'figure'),
@@ -369,10 +337,11 @@ def update_graph(regions, employees, jf):
     Output('graph6', 'figure'),
     Output('dataset-info', 'children'),
     ],
-    [Input('button', 'n_clicks'),
-     Input('regions', 'value'),
-     Input('employees', 'value'),
-     Input('jf', 'value')])
+    [Input('button', 'n_clicks')]
+    ,
+     [State('regions', 'value'),
+     State('employees', 'value'),
+     State('jf', 'value')])
 def update_from_filters(n_clicks, regions, employees, jf):
 
     filters = {
@@ -385,53 +354,41 @@ def update_from_filters(n_clicks, regions, employees, jf):
     state['filters']['employees'] = employees
     state['filters']['jf'] = jf
 
-    if state['frame'] is not None:
-            filtered_df = filter_df(state['frame'].copy(), filters)
-            return  create_chart_JF(filtered_df), create_chart_age(filtered_df), create_chart_starting_date(filtered_df), create_chart_employees(filtered_df), create_chart_mapbox(filtered_df), create_chart_province(filtered_df), get_info(filtered_df)
-    else:
 
-        if n_clicks is not None:
-            
-            filters = state['filters']
-            print( state['filters']['regions'])
+    adQuery = create_adaptive_query(state)
+    return create_chart_JF(adQuery), create_chart_age(adQuery), create_chart_starting_date(adQuery), create_chart_employees(adQuery), create_chart_mapbox(adQuery), create_chart_province(adQuery), get_info(adQuery)
 
-            connection = sqlite3.connect('kbo.sqlite3')
-            statement = connection.cursor()
-            print('connexion Ok')
-            regions = []
-            employees = []
-            jf = []
-            query = ''
-            query_filters = []
 
-            if 'regions' in filters and filters['regions'] is not None and len(filters['regions']) > 0:
-                regions = filters.get('regions')
-                query_filters.append("Regions in ("  + ','.join(['?']*len(regions)) + ")")
-            if 'employees' in filters and filters['employees'] is not None and len(filters['employees']) > 0:
-                employees = filters.get('employees')
-                query_filters.append("employees in (" + ','.join(['?']*len(employees)) + ")")
-            if 'jf' in filters and filters['jf'] is not None and len(filters['jf']) > 0:
-                jf = filters.get('jf')
-                query_filters.append("Description in ("   + ','.join(['?']*len(jf)) + ")")
-
-            print('filters ok')
-            query = "SELECT * from enterprises_addresses"
-
-            if len(query_filters) > 0:
-                print('queryOk')
-                query += " WHERE " + " AND ".join(query_filters)
-            else:
-                print('nofilters')
-                return create_chart_JF(empty_df), create_chart_age(empty_df), create_chart_starting_date(empty_df), create_chart_employees(empty_df), create_chart_mapbox(empty_df), create_chart_province(empty_df), get_info(empty_df)
-            
-            frame = pd.read_sql_query(query, connection, params = regions + employees + jf)
-            return create_chart_JF(frame), create_chart_age(frame), create_chart_starting_date(frame), create_chart_employees(frame), create_chart_mapbox(frame), create_chart_province(frame), get_info(frame)
+def create_adaptive_query(state):
+    filters = state['filters']
+    where = ''
     
-        else:
-            print('nclicknull')
-            empty_df = pd.DataFrame(columns = LABELS)
-            return create_chart_JF(empty_df), create_chart_age(empty_df), create_chart_starting_date(empty_df), create_chart_employees(empty_df), create_chart_mapbox(empty_df), create_chart_province(empty_df), get_info(empty_df)
+    regions = []
+    employees = []
+    jf = []
+    numbers = []
+    query = ''
+    query_filters = []
 
+    if 'regions' in filters and filters['regions'] is not None and len(filters['regions']) > 0:
+        regions = filters.get('regions')
+        query_filters.append("Regions in ("  + ','.join(['?']*len(regions)) + ")")
+    if 'employees' in filters and filters['employees'] is not None and len(filters['employees']) > 0:
+        employees = filters.get('employees')
+        query_filters.append("employees in (" + ','.join(['?']*len(employees)) + ")")
+    if 'jf' in filters and filters['jf'] is not None and len(filters['jf']) > 0:
+        jf = filters.get('jf')
+        query_filters.append("Description in ("   + ','.join(['?']*len(jf)) + ")")
+    if 'file' in state and state['file'] is not None and len(state['file']) > 0:
+        numbers=state['file']
+        query_filters.append("EnterpriseNumber in ("   + ','.join(['?']*len(state['file'])) + ")")
+
+    
+    if len(query_filters) > 0:
+        where = " AND ".join(query_filters)
+        return AdaptiveQuery(where, parameters=regions+employees+jf+numbers)
+    
+    return None
 
 if __name__ == '__main__':
     app.run_server(debug=True)
