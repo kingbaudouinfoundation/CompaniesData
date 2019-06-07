@@ -18,7 +18,7 @@ import sqlite3
 from functions import get_info, build_filters, parse_contents, create_dataframe
 from charts import create_chart_JF, create_chart_age, create_chart_starting_date, create_chart_employees, create_chart_mapbox, create_chart_province
 
-mapbox_access_token = 'pk.eyJ1IjoidGhvbWFzdnJvIiwiYSI6ImNqdWI5Y2JxdjBhYW40NnBpa2RhcHBnb3kifQ.9N4rhGAGmo9zqnXOlt-WOw'
+mapbox_access_token = os.environ.get('MAPBOX_ACCESS_TOKEN')
 
 LABELS = ['EntityNumber', 'JuridicalForm', 'StartDate', 'Zipcode', 'MunicipalityFR', 'Description', 'employees','latitude', 'longitude', 'province', 'Regions', 'Denomination']
 
