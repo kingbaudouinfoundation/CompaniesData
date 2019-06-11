@@ -262,7 +262,6 @@ def get_datas_employees(tab):
     for row in tab:
         if ' to ' in row:
             x = row.split(' to ')
-            #diff = int(x[1]) - int(x[0])
             if int(x[1]) <= 5:
                 P1 = P1 + 1
                 list_emp.append('1 to 5')          
