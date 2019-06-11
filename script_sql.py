@@ -136,12 +136,17 @@ merge = pd.merge(frame1, frame2, how = 'left', on = 'juridicalForm')
 
 merge.to_csv('enterprises_addresses.csv', index = False)
 '''
+'''
+
 query = 'SELECT * from enterprises_addresses'
 frame = pd.read_sql_query(query, connection)
+frame.drop('employees', axis = 1, inplace = True)
 
-p, l = get_datas_employees(frame.loc[: , 'Employees'])
-frame['employees'] = l
-frame.drop('Employees', axis = 1, inplace = True)
+query = 'SELECT EnterpriseNumber, Employees from employees'
+frame2 = pd.read_sql_query(query, connection)
+
+merge = pd.merge(frame, frame2, how = 'left', on = 'EnterpriseNumber')
+'''
 '''
 query = 'SELECT EnterpriseNumber, Employees from employees'
 frame2 = pd.read_sql_query(query, connection)
@@ -149,4 +154,4 @@ frame2 = pd.read_sql_query(query, connection)
 merge = pd.merge(frame, frame2, on = 'EnterpriseNumber')
 '''
 
-frame.to_csv('enterprises_addresses', index = False)
+merge.to_csv('enterprises.csv', index = False)

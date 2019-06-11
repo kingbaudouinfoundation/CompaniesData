@@ -105,7 +105,7 @@ def create_chart_JF(adQuery = None):
                     zeroline = False,
                     showticklabels = True,
                     tickfont=dict(
-                    size=10,
+                    size=7,
                     ),
                 ),
                 
