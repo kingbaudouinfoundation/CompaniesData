@@ -12,12 +12,13 @@ import pandas as pd
 import plotly.plotly as py
 import plotly.graph_objs as go
 import io
+import os
 import csv 
 import sqlite3
 
 from functions import get_datas_entities_age, get_datas_starting_date, get_datas_employees, AdaptiveQuery
 
-mapbox_access_token = 'pk.eyJ1IjoidGhvbWFzdnJvIiwiYSI6ImNqdWI5Y2JxdjBhYW40NnBpa2RhcHBnb3kifQ.9N4rhGAGmo9zqnXOlt-WOw'
+mapbox_access_token = os.environ.get('MAPBOX_ACCESS_TOKEN')
 
 DEFAULT_LAYOUT = go.Layout(
                 xaxis = go.layout.XAxis(

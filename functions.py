@@ -13,6 +13,12 @@ import plotly.graph_objs as go
 import io
 import csv 
 import sqlite3
+import os
+
+DB_FOLDER=os.environ.get(
+    "DB_FOLDER",
+    os.getcwd()
+)
 
 DICT_REGIONS = {
         'Bruxelles' : 'Bruxelles (19 communes)',
@@ -127,7 +133,7 @@ def get_info(adQuery = None):
 # @frame : the dataframe with which the filters value are created
 def build_filters():
 
-    connection = sqlite3.connect('kbo.sqlite3')
+    connection = sqlite3.connect(DB_FOLDER + '/kbo.sqlite3')
     statement = connection.cursor()
 
     query_regions = 'SELECT DISTINCT Regions from enterprises_addresses'
@@ -310,10 +316,10 @@ def parse_contents(contents, filename, date):
 
 class AdaptiveQuery:
     
-    def __init__(self, where, parameters=(), db_name='/Users/Thomas/Documents/Fondation/Python/CompaniesData/kbo.sqlite3', table='enterprises_addresses', threshold=1000):
+    def __init__(self, where, parameters=(), db_folder=DB_FOLDER, db_name='kbo.sqlite3', table='enterprises_addresses', threshold=1000):
         self.where = where
         self.parameters = parameters
-        self.db_name = db_name
+        self.db_path = db_folder + '/' + db_name
         self.table = table
         self.df = None
         
@@ -324,14 +330,14 @@ class AdaptiveQuery:
     create and save in self.df a dataframe based on the where clause
     '''
     def get_df(self):
-        with sqlite3.connect(self.db_name) as con:
+        with sqlite3.connect(self.db_path) as con:
             self.df = pd.read_sql('SELECT * FROM '+self.table+' WHERE '+self.where, params=self.parameters, con=con)
     
     '''
     Perform a SQL query
     '''
     def query(self, fields='*', extra=''):
-        with sqlite3.connect(self.db_name) as con:
+        with sqlite3.connect(self.db_path) as con:
             cur = con.cursor()
             query = 'SELECT '+ fields+' FROM '+self.table+' WHERE '+self.where+' '+extra
             return cur.execute(query, self.parameters).fetchall()
