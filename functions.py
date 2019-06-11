@@ -191,6 +191,7 @@ def get_datas_starting_date(tab):
     x = [d for d in year if x.count(d) == 0]
     year_prop = [year.count(d) for d in year]
 
+
     return x, year_prop
 
 #
@@ -256,7 +257,7 @@ def get_datas_employees(tab):
         if ' to ' in row:
             x = row.split(' to ')
             #diff = int(x[1]) - int(x[0])
-            if int(x[0]) <= 5:
+            if int(x[1]) <= 5:
                 P1 = P1 + 1
                 list_emp.append('1 to 5')          
             elif int(x[0]) >= 5 and int(x[1]) <= 10:
