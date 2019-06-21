@@ -6,6 +6,10 @@
     display: none !important;
     }
 
+.VirtualizedSelectOption {
+    overflow: hidden;
+    font-size: .7em;
+}
 
 #left {
     flex : 0.5;
