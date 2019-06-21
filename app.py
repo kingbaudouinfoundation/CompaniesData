@@ -154,7 +154,7 @@ app.layout = html.Div([
     html.Div([
 
         html.Div('Data visualization tools', style = {'color':'steelblue','fontSize':'130%','marginTop':'40px', 'fontWeight':'bold'}),
-        html.Div('Select filters aside and make your research from the database. Upload a file if you want to see data from specific enttities.', style = {'color':'gray','fontSize':'90%','marginTop':'40px', 'fontWeight':'bold'}),
+        html.Div('Select filters aside and make your research from the database. Upload a file if you want to see data from specific entities.', style = {'color':'gray','fontSize':'90%','marginTop':'40px', 'fontWeight':'bold'}),
         html.P('', id = 'blank'),
         html.Hr(style = {'marginLeft':'70px', 'marginRight':'70px', 'color':'lightgray'}),
         html.Div(id = 'empty'),
