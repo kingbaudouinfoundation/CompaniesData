@@ -17,7 +17,7 @@ import csv
 import sqlite3
 
 from functions import get_info, build_filters, parse_contents, create_dataframe, AdaptiveQuery
-from charts import create_chart_JF, create_chart_age, create_chart_starting_date, create_chart_employees, create_chart_mapbox, create_chart_province
+from charts import create_chart_JF, create_chart_age, create_chart_starting_date, create_chart_employees, create_chart_mapbox, create_chart_province, create_chart_negative_operating_income, create_chart_assets
 
 mapbox_access_token = os.environ.get('MAPBOX_ACCESS_TOKEN')
 
@@ -253,9 +253,36 @@ app.layout = html.Div([
                 )
             ]
         ),
+        html.Div(
+            id = 'div7',
+            children = [
+                html.Div(
+                    id = 'graph7_container',
+                    children = [
+                        dcc.Graph(
+                            id = 'graph7',
+                            figure = create_chart_negative_operating_income(adQuery)
+                        )
+                    ]
+                )
+            ]
+        ),
+        html.Div(
+            id = 'div8',
+            children = [
+                html.Div(
+                    id = 'graph8_container',
+                    children = [
+                        dcc.Graph(
+                            id = 'graph8',
+                            figure = create_chart_assets(adQuery)
+                        )
+                    ]
+                )
+            ]
+        ),
             
-    
-        
+  
 
     ], id = "right")
  
@@ -315,6 +342,8 @@ def file_reader(list_of_contents, list_of_names, list_of_dates):
     Output('graph4', 'figure'),
     Output('graph5', 'figure'),
     Output('graph6', 'figure'),
+    Output('graph7', 'figure'),
+    Output('graph8', 'figure'),
     Output('dataset-info', 'children'),
     ],
     [Input('button', 'n_clicks')]
@@ -336,7 +365,7 @@ def update_from_filters(n_clicks, regions, employees, jf):
 
 
     adQuery = create_adaptive_query(state)
-    return create_chart_JF(adQuery), create_chart_age(adQuery), create_chart_starting_date(adQuery), create_chart_employees(adQuery), create_chart_mapbox(adQuery), create_chart_province(adQuery), get_info(adQuery)
+    return create_chart_JF(adQuery), create_chart_age(adQuery), create_chart_starting_date(adQuery), create_chart_employees(adQuery), create_chart_mapbox(adQuery), create_chart_province(adQuery), create_chart_negative_operating_income(adQuery),create_chart_assets(adQuery), get_info(adQuery)
 
 
 def create_adaptive_query(state):
