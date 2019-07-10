@@ -267,6 +267,132 @@ def create_chart_employees(adQuery = None):
             )
         }
 
+def create_chart_assets(adQuery = None):
+
+    if adQuery is None:
+        return {
+            'data': [    
+                go.Pie(
+                    labels = [],
+                    values = [],
+                    hole = 0.5,
+                    marker = {
+                        'colors': DEFAULT_COLOURS_3
+                    }
+                )
+            ],
+            'layout' : {
+                'title' : ''
+            }
+        }
+
+    else:
+        x = ['0 to 10000', '10000 to 100000', '100000 to 500000', '500000 to 1M', '1M to 50M', 'more than 50M']
+        y = []
+        assets = adQuery.get('assets')
+        P1 = P2 = P3 = P4 = P5 = P6 = 0
+        for a in assets:
+            if a == '':
+                assets.remove(a)
+            else:
+                n = float(a)
+                if n <= 10000:
+                    P1 = P1 + 1
+                if n >= 10000 and n <= 100000:
+                    P2 = P2 + 1
+                if n >= 100000 and n <= 500000:
+                    P3 = P3 + 1
+                if n >= 500000 and n <= 1000000:
+                    P4 = P4 + 1
+                if n >= 1000000 and n <= 50000000:
+                    P5 = P5 + 1
+                if n >= 50000000:
+                    P6 = P6 + 1
+        y.append(P1)
+        y.append(P2)
+        y.append(P3)
+        y.append(P4)
+        y.append(P5)
+        y.append(P6)
+        count = P1 + P2 + P3 + P4 + P5 + P6
+
+        return {
+            'data' : [
+                 go.Bar(
+                    x = x,
+                    y = y,
+                    marker = {
+                        'color':'FireBrick'
+                    },
+                )
+
+            ],
+            'layout' : go.Layout(
+                title = 'Entites assets(€) - based on ' + str(count) + ' entities',
+                xaxis = go.layout.XAxis(
+                    showgrid = False,
+                    showline = False,
+                    zeroline = False,
+                ),
+                yaxis = go.layout.YAxis(
+                    showgrid = False,
+                    showline = False,
+                    zeroline = False,
+            
+                )
+            )
+        }
+        
+
+def create_chart_negative_operating_income(adQuery = None):
+
+    if adQuery is None:
+        return {
+            'data': [    
+                go.Pie(
+                    labels = [],
+                    values = [],
+                    hole = 0.5,
+                    marker = {
+                        'colors': DEFAULT_COLOURS_3
+                    }
+                )
+            ],
+            'layout' : {
+                'title' : ''
+            }
+        }
+
+    else:
+        rows = adQuery.groupby_count('DUM_9901_Verlieslatend_bedrijfsresultaat_2017')
+        values = []
+        values_prop = []
+        for r in rows:
+            values.append(r[0])
+            values_prop.append(r[1])
+        values.remove(values[0])
+        values_prop.remove(values_prop[0])
+        count = 0
+        for v in values_prop:
+            count = count + v
+        return {
+            'data': [    
+                go.Pie(
+                    labels = values,
+                    values = values_prop,
+                    hole = 0.5,
+                    marker = {
+                        'colors': DEFAULT_COLOURS_1
+                    }
+                )
+            ],
+            'layout' : go.Layout(
+                title = 'Entities having a negative operating income - based on ' + str(adQuery.count()) + ' entities'
+            )
+        }
+
+
+
 def create_chart_mapbox(adQuery = None):
     
 
